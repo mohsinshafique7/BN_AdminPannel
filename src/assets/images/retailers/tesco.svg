@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24">
+    <defs>
+        <filter id="a283qkeova" width="105.5%" height="105.9%" x="-2.7%" y="-2.3%" filterUnits="objectBoundingBox">
+            <feOffset dy="8" in="SourceAlpha" result="shadowOffsetOuter1"/>
+            <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation="10"/>
+            <feColorMatrix in="shadowBlurOuter1" result="shadowMatrixOuter1" values="0 0 0 0 0.0142771845 0 0 0 0 0.1390611 0 0 0 0 0.272758152 0 0 0 0.0621448864 0"/>
+            <feOffset dy="2" in="SourceAlpha" result="shadowOffsetOuter2"/>
+            <feGaussianBlur in="shadowOffsetOuter2" result="shadowBlurOuter2" stdDeviation="2"/>
+            <feColorMatrix in="shadowBlurOuter2" result="shadowMatrixOuter2" values="0 0 0 0 0.282352941 0 0 0 0 0.439215686 0 0 0 0 0.964705882 0 0 0 0.0984484266 0"/>
+            <feMerge>
+                <feMergeNode in="shadowMatrixOuter1"/>
+                <feMergeNode in="shadowMatrixOuter2"/>
+            </feMerge>
+        </filter>
+        <rect id="hqyyoadmbb" width="1240" height="1145" x="0" y="0" rx="4"/>
+        <path id="5uyxzsqnpc" d="M0 0H1200V952H0z"/>
+    </defs>
+    <g fill="none" fill-rule="evenodd">
+        <path fill="#FAFBFD" d="M0 0H1440V1024H0z" transform="translate(-482 -753)"/>
+        <g transform="translate(-482 -753) translate(150 639)">
+            <use fill="#000" filter="url(#a283qkeova)" xlink:href="#hqyyoadmbb"/>
+            <use fill="#FFF" xlink:href="#hqyyoadmbb"/>
+            <g transform="translate(20 94)">
+                <mask id="3zorw4ml1d" fill="#fff">
+                    <use xlink:href="#5uyxzsqnpc"/>
+                </mask>
+                <g mask="url(#3zorw4ml1d)">
+                    <path d="M0 0H1205V64H0z" opacity=".3"/>
+                    <g>
+                        <path d="M0 0H116V64H0z" transform="translate(278)"/>
+                        <g transform="translate(278) translate(34 20)">
+                            <rect width="24" height="23.998" fill="#EBF2FF" fill-rule="nonzero" rx="2"/>
+                            <path fill="#004995" d="M10.427 16.803h5.127c.061 0 .061.035 0 .068-.569.308-1.408 1.267-1.408 1.267-.57.65-1.015 1.062-2.01 1.062H7.223c-.03 0-.03-.07 0-.07.54-.341 1.349-1.302 1.349-1.302.33-.446 1.014-1.028 1.859-1.028l-.004.003z"/>
+                            <path fill="#E30520" d="M13.006 7.737c1.183 0 2.602.246 3.194.77V6.6H7.8v1.911c.592-.521 1.864-.74 3.223-.74v5.24c0 .772-.059.987-.354 1.389h2.692c-.297-.405-.355-.617-.355-1.388V7.737z"/>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,16 @@
+.not-found-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  flex-direction: column;
+  & > span {
+    color: #333;
+    font-size: 56px;
+    margin-bottom: 8px;
+  }
+  & > h1 {
+    color: #333;
+    font-size: 44px;
+  }
+}

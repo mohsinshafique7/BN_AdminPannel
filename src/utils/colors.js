@@ -1,0 +1,8 @@
+export const backgroundMainTable = "#fff"
+export const borderMainTable = "#f0f0f0"
+export const backgroundSuggestedBox = "#fff"
+export const borderSuggestedBox = "#ccc"
+export const colorHeaderTableTitle = "rgba(0, 0, 0, 0.65);"
+export const colorTableLink = "rgb(24, 144, 255)"
+export const colorTableItem = "rgba(0, 0, 0, 0.65)"
+export const loaderColor = "#3B4799"
