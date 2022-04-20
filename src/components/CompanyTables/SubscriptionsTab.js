@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { connect } from "react-redux";
 import { Checkbox, Collapse } from "antd";
 import { getSubscriptions, subscriptionSubscribe, subscriptionUnsubscribe } from "store/subscriptions/action";
@@ -7,32 +7,26 @@ import { STATE_STATUSES } from "utils/app";
 import Loader from "../Loader/Loader";
 import { CollapseClose, CollapseOpen } from "assets/icons";
 
-const Location = ({
-  companyId,
-  location,
-  companyTaxonomies,
-  subscriptionSubscribe, 
-  subscriptionUnsubscribe
-}) => {
+const Location = ({ companyId, location, companyTaxonomies, subscriptionSubscribe, subscriptionUnsubscribe }) => {
   const [isOpenChild, setIsOpenChild] = useState(false);
   const [isChecked, setIsChecked] = useState(null);
 
   useEffect(() => {
-    setIsChecked(companyTaxonomies.includes(location.id))
-  }, [companyTaxonomies])
+    setIsChecked(companyTaxonomies.includes(location.id));
+  }, [companyTaxonomies]);
 
   const setCheckbox = () => {
     setIsChecked(!isChecked);
-    
+
     const taxonomy = {
       ids: location.id.toString(),
-      companyId
-    }
+      companyId,
+    };
 
-    if(companyTaxonomies.includes(location.id)) {
-      subscriptionUnsubscribe(taxonomy)
+    if (companyTaxonomies.includes(location.id)) {
+      subscriptionUnsubscribe(taxonomy);
     } else {
-      subscriptionSubscribe(taxonomy)
+      subscriptionSubscribe(taxonomy);
     }
   };
 
@@ -62,9 +56,9 @@ const Location = ({
             <Location
               key={item.id}
               companyId={companyId}
-              location={item} 
+              location={item}
               companyTaxonomies={companyTaxonomies}
-              subscriptionSubscribe={subscriptionSubscribe} 
+              subscriptionSubscribe={subscriptionSubscribe}
               subscriptionUnsubscribe={subscriptionUnsubscribe}
             />
           ))}
@@ -74,32 +68,25 @@ const Location = ({
   );
 };
 
-const SearchTerm = ({
-  companyId,
-  retailer,
-  searchTerm,
-  companyTaxonomies,
-  subscriptionSubscribe, 
-  subscriptionUnsubscribe
-}) => {
+const SearchTerm = ({ companyId, retailer, searchTerm, companyTaxonomies, subscriptionSubscribe, subscriptionUnsubscribe }) => {
   const [isChecked, setIsChecked] = useState(null);
 
   useEffect(() => {
-    setIsChecked(companyTaxonomies.includes(searchTerm.id))
-  }, [companyTaxonomies])
+    setIsChecked(companyTaxonomies.includes(searchTerm.id));
+  }, [companyTaxonomies]);
 
   const setCheckbox = () => {
     setIsChecked(!isChecked);
 
     const taxonomy = {
       ids: searchTerm.id.toString(),
-      companyId
-    }
+      companyId,
+    };
 
-    if(companyTaxonomies.includes(searchTerm.id)) {
-      subscriptionUnsubscribe(taxonomy)
+    if (companyTaxonomies.includes(searchTerm.id)) {
+      subscriptionUnsubscribe(taxonomy);
     } else {
-      subscriptionSubscribe(taxonomy)
+      subscriptionSubscribe(taxonomy);
     }
   };
 
@@ -122,25 +109,28 @@ const SearchTerm = ({
 const SubscriptionsTab = (props) => {
   const { Panel } = Collapse;
 
-  const { 
-    companyId, 
-    getSubscriptions, 
-    subscriptionSubscribe, 
-    subscriptionUnsubscribe, 
-    locations, 
-    searchTerms, 
-    status } = props;
+  const { companyId, getSubscriptions, subscriptionSubscribe, subscriptionUnsubscribe, locations, searchTerms, status } = props;
 
   const [companyTaxonomies, setCompanyTaxonomies] = useState([]);
 
   useEffect(() => {
-    getSubscriptions({ subscription: true, companyId })
-      .then(response => {
-        const taxonomies = response.data.companyTaxonomies.map(item => item.retailerTaxonomyId)
-        setCompanyTaxonomies(taxonomies)
-      })
+    getSubscriptions({ subscription: true, companyId }).then((response) => {
+      const taxonomies = response.data.companyTaxonomies.map((item) => item.retailerTaxonomyId);
+      setCompanyTaxonomies(taxonomies);
+    });
   }, []);
-
+  const dd = useMemo(() => {
+    console.log(props.searchTerms);
+    return Object.entries(props.searchTerms).map((i, index) => {
+      return {
+        searchTerm: i[0],
+        data: i[1].map((a) => {
+          return { category: a.category };
+        }),
+      };
+    });
+  });
+  console.log("FullData", dd);
   return (
     <div style={{ position: "relative" }}>
       <div className="item-title">Subscriptions</div>
@@ -150,27 +140,27 @@ const SubscriptionsTab = (props) => {
             <div className="title-taxonomy-main">Locations</div>
             <Collapse>
               {Object.keys(locations).map((locationItem) => (
-                <Panel 
+                <Panel
                   key={locationItem}
-                  showArrow={false} 
+                  showArrow={false}
                   header={
                     <div className="taxonomy-title">
                       <img src={getRetailerImg(locationItem)} alt="retailer" />
                       <span>{locationItem}</span>
                     </div>
-                  }>
-                   {locations[locationItem].map((location) => (
-                    <Location 
+                  }
+                >
+                  {locations[locationItem].map((location) => (
+                    <Location
                       key={location.id}
                       companyId={companyId}
                       location={location}
                       companyTaxonomies={companyTaxonomies}
-                      subscriptionSubscribe={subscriptionSubscribe} 
+                      subscriptionSubscribe={subscriptionSubscribe}
                       subscriptionUnsubscribe={subscriptionUnsubscribe}
                     />
                   ))}
                 </Panel>
-
               ))}
             </Collapse>
           </div>
@@ -179,21 +169,26 @@ const SubscriptionsTab = (props) => {
         {Object.entries(searchTerms).length !== 0 ? (
           <div>
             <div className="title-taxonomy-main">Search Terms</div>
-            {Object.keys(searchTerms).map((searchTermItem) => (
-              <div key={searchTermItem}>
-                {searchTerms[searchTermItem].map((searchTerm) => (
-                  <SearchTerm
-                    key={searchTerm.id}
-                    companyId={companyId}
-                    retailer={searchTermItem}
-                    searchTerm={searchTerm}
-                    companyTaxonomies={companyTaxonomies}
-                    subscriptionSubscribe={subscriptionSubscribe} 
-                    subscriptionUnsubscribe={subscriptionUnsubscribe} 
-                  />
-                ))}
-              </div>
-            ))}
+            {/* {Object.keys(searchTerms).map((searchTermItem) => (
+              // <div>
+              //   {searchTerms[searchTermItem].map((i) => {
+              //     return <div>{i.category}</div>;
+              //   })}
+              // </div>
+              // <div key={searchTermItem}>
+              //   {searchTerms[searchTermItem].map((searchTerm) => (
+              //     <SearchTerm
+              //       key={searchTerm.id}
+              //       companyId={companyId}
+              //       retailer={searchTermItem}
+              //       searchTerm={searchTerm}
+              //       companyTaxonomies={companyTaxonomies}
+              //       subscriptionSubscribe={subscriptionSubscribe}
+              //       subscriptionUnsubscribe={subscriptionUnsubscribe}
+              //     />
+              //   ))}
+              // </div>
+            ))} */}
           </div>
         ) : null}
       </>

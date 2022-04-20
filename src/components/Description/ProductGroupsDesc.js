@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import { Popconfirm, Tooltip, Button, Pagination, Empty, Input, Popover } from "antd";
 import { HexColorPicker } from "react-colorful";
-
+import Search from "../Search/Search";
 import {
   getProductGroup,
   deleteProductGroup,
@@ -11,6 +11,7 @@ import {
   removeProductGroupCores,
   addProductGroupCores,
 } from "../../store/productGroups/action";
+import { useSelector } from "react-redux";
 import { getUsers } from "../../store/users/action";
 import { getCompanies } from "../../store/companies/action";
 import {
@@ -24,6 +25,7 @@ import Loader from "../Loader/Loader";
 import { STATE_STATUSES } from "../../utils/app";
 import { DeleteOutlined, EditOutlined, CloseOutlined, CheckOutlined } from "@ant-design/icons";
 import { backgroundMainTable } from "utils/colors";
+import ProductGroupCoreProduct from "components/Tables/ProductGroupCoreProduct";
 
 const ProductGroupsDesc = ({
   removeProductGroupCores,
@@ -32,11 +34,20 @@ const ProductGroupsDesc = ({
   editProductGroup,
   getCompanies,
   getUsers,
-  status,
-  productGroup: { name, id, coreProduct, user, company, color },
+  // status,
+  // productGroup: { name, id, coreProduct, user, company, color },
   history,
   match: { params },
 }) => {
+  const { productGroup, status, searchValue } = useSelector((state) => {
+    return {
+      searchValue: state.filters.searchValue,
+      productGroup: state.productGroups.productGroup,
+      status: state.productGroups.status,
+    };
+  });
+  console.log(productGroup);
+  const { name, id, coreProduct, user, company, color } = productGroup;
   const inputData = [{ label: "Name", name: "name", type: "text", required: true }];
 
   const selectData = [
@@ -53,9 +64,6 @@ const ProductGroupsDesc = ({
     },
   ];
 
-  const [page, setPage] = useState(0);
-  const [perPage, setPerPage] = useState(10);
-  const [searchValue, setSearchValue] = useState("");
   const [inintialColor, setInintialColor] = useState(color);
   const [editColor, setEditColor] = useState(false);
   const [visibleColors, setVisibleColors] = useState(false);
@@ -64,25 +72,25 @@ const ProductGroupsDesc = ({
     setInintialColor(color);
   }, [color]);
 
-  const onSearch = (data) =>
-    data.filter((item) => {
-      if (searchValue) {
-        return item["title"].toLowerCase().includes(searchValue.toLowerCase());
-      }
-      return item;
-    });
+  // const onSearch = (data) =>
+  //   data.filter((item) => {
+  //     if (searchValue) {
+  //       return item["title"].toLowerCase().includes(searchValue.toLowerCase());
+  //     }
+  //     return item;
+  //   });
 
-  const limit = page * perPage + perPage < onSearch(coreProduct).length ? page * perPage + perPage : onSearch(coreProduct).length;
+  // const limit = page * perPage + perPage < onSearch(coreProduct).length ? page * perPage + perPage : onSearch(coreProduct).length;
 
-  const renderData = onSearch(coreProduct).slice(page * perPage, limit);
+  // const renderData = onSearch(coreProduct).slice(page * perPage, limit);
 
-  const onChangePage = (page, pageSize) => {
-    setPage(page - 1);
-  };
+  // const onChangePage = (page, pageSize) => {
+  //   setPage(page - 1);
+  // };
 
-  const onChangePerPage = (page, pageSize) => {
-    setPerPage(pageSize);
-  };
+  // const onChangePerPage = (page, pageSize) => {
+  //   setPerPage(pageSize);
+  // };
 
   const initialValueDefine = () => {
     if (name && user && company) {
@@ -178,14 +186,16 @@ const ProductGroupsDesc = ({
 
               <div className="title-item-desc">Core Products:</div>
               {coreProduct.length ? (
-                <Input
-                  style={{ marginBottom: "15px" }}
-                  placeholder="Search"
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                />
-              ) : null}
-              {renderData && renderData.length ? (
+                <Search />
+              ) : // <Input
+              //   style={{ marginBottom: "15px" }}
+              //   placeholder="Search"
+              //   value={searchValue}
+              //   onChange={(e) => setSearchValue(e.target.value)}
+              // />
+              null}
+              <ProductGroupCoreProduct data={productGroup.coreProduct} removeProductGroupCores={removeProductGroupCores} />
+              {/* {renderData && renderData.length ? (
                 <>
                   <div className="desc-core-product">
                     {renderData.map((product) => (
@@ -214,7 +224,7 @@ const ProductGroupsDesc = ({
                 </>
               ) : (
                 <Empty />
-              )}
+              )} */}
             </div>
             <div className="controls-box">
               <Popconfirm
@@ -248,19 +258,13 @@ const ProductGroupsDesc = ({
   );
 };
 
-export default connect(
-  (state) => ({
-    productGroup: state.productGroups.productGroup,
-    status: state.productGroups.status,
-  }),
-  {
-    removeProductGroupCores,
-    addProductGroupCores,
-    getCoreProducts,
-    getUsers,
-    getCompanies,
-    getProductGroup,
-    deleteProductGroup,
-    editProductGroup,
-  }
-)(withRouter(ProductGroupsDesc));
+export default connect(null, {
+  removeProductGroupCores,
+  addProductGroupCores,
+  getCoreProducts,
+  getUsers,
+  getCompanies,
+  getProductGroup,
+  deleteProductGroup,
+  editProductGroup,
+})(withRouter(ProductGroupsDesc));

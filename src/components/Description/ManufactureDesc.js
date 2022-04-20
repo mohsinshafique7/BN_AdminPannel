@@ -17,24 +17,17 @@ import Search from "../Search/Search";
 // import ModalFrom from '../ModalFrom/ModalFrom'
 import TableBox from "../TableBox/TableBox";
 import CoreForm from "../ModalFrom/CoreForm";
+import ManufacturerBrandTable from "components/Tables/ManufacturerBrandTable";
 
-const ManufacturersDesc = ({
-  //   getManufacturer,
-  //   deleteManufacturer,
-  //   createBrandManufacturers,
-  //   manufacturerDeleteBrand,
-  //   editManufacturer,
-  //   getFreeBrands,
-  //   manufacturer: { createdAt, updatedAt, name, brands, id, color },
-  history,
-  match: { params },
-}) => {
+const ManufacturersDesc = ({ history, match: { params } }) => {
   const { manufacturer } = useSelector((state) => {
     return {
       manufacturer: state.manufacturersBrands.manufacturer,
     };
   });
   const { createdAt, updatedAt, name, brands, id, color } = manufacturer;
+  console.log("brands", brands);
+
   const dispatch = useDispatch();
   const inputData = [
     { label: "Name", name: "name", type: "text", required: true },
@@ -68,18 +61,18 @@ const ManufacturersDesc = ({
     color: color,
   };
 
-  const sortParams = [
-    { label: "Core Product", value: "coreProduct" },
-    { label: "EAN", value: "ean" },
-    { label: "Date", value: "createdAt" },
-  ];
+  // const sortParams = [
+  //   { label: "Core Product", value: "coreProduct" },
+  //   { label: "EAN", value: "ean" },
+  //   { label: "Date", value: "createdAt" },
+  // ];
 
-  const [queryParams, setQueryParams] = useState(qs.parse(params.param));
+  // const [queryParams, setQueryParams] = useState(qs.parse(params.param));
 
-  useEffect(() => {
-    const queryString = qs.stringify(queryParams);
-    history.replace(`/manufacturer/${params.id}/${queryString}`);
-  }, [queryParams, history, params.id]);
+  // useEffect(() => {
+  //   const queryString = qs.stringify(queryParams);
+  //   history.replace(`/manufacturer/${params.id}/${queryString}`);
+  // }, [queryParams, history, params.id]);
 
   useEffect(() => {
     dispatch(getFreeBrands());
@@ -113,42 +106,6 @@ const ManufacturersDesc = ({
       description: message,
     });
   };
-
-  const setPage = (page) => {
-    setQueryParams((queryParams) => {
-      return {
-        ...queryParams,
-        page,
-      };
-    });
-  };
-
-  const setPerPage = (perPage) => {
-    setQueryParams((queryParams) => {
-      return {
-        ...queryParams,
-        perPage,
-      };
-    });
-  };
-
-  const tableHeader = () => (
-    <div className="item-box header">
-      <div className="item-link">Core Product</div>
-      <div className="item-id">EAN</div>
-      <div className="item-date">Created At</div>
-    </div>
-  );
-
-  const tableData = (item) => (
-    <>
-      <Link className="item-link" to={`/core-product/${[item.id]}`}>
-        {[item.title]}
-      </Link>
-      <div className="item-id">{[item.ean]}</div>
-      <div className="item-date">{moment(item.createdAt).format("MMMM Do YYYY, h:mm")}</div>
-    </>
-  );
 
   return (
     <>
@@ -237,17 +194,7 @@ const ManufacturersDesc = ({
                 {brand.coreProducts?.length ? (
                   <>
                     <Search />
-                    <TableBox
-                      data={brand.coreProducts}
-                      tableHeader={tableHeader}
-                      tableData={tableData}
-                      titleParam={"title"}
-                      sortParams={sortParams}
-                      page={Number(queryParams.page)}
-                      perPage={Number(queryParams.perPage)}
-                      setPage={setPage}
-                      setPerPage={setPerPage}
-                    />
+                    <ManufacturerBrandTable data={brand.coreProducts} />
                   </>
                 ) : null}
               </div>

@@ -115,7 +115,6 @@ const BrandsTable = ({ data, page, perPage, setPage, setPerPage }) => {
   ];
   return (
     <Styles>
-      <h2>Hello</h2>
       <Table dataSource={renderData} columns={columns} pagination={false} />
       <Pagination
         className="pagination-controls"
