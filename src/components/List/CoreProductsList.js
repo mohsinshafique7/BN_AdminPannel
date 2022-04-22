@@ -40,8 +40,19 @@ const CoreProductsList = (props) => {
   const [queryParams, setQueryParams] = useState(qs.parse(params.page));
   const [dateInterval, setDateInterval] = useState([]);
 
-  const [selectCoreProduct, setSelectCoreProduct] = useState({});
+  // const [selectCoreProduct, setSelectCoreProduct] = useState({});
   const [coreImage, setCoreImage] = useState("");
+  // const selectDataEdit = [
+  //   {
+  //     name: "brandId",
+  //     value: "id",
+  //     option: "name",
+  //     action: getBrands,
+  //     store: "brands",
+  //     lable: "Change brand",
+  //     required: false,
+  //     mode: false,
+  //   },
 
   const [selectData] = useState([
     {
@@ -86,94 +97,6 @@ const CoreProductsList = (props) => {
     },
   ]);
 
-  const inputData = [
-    { label: "Title", name: "title", type: "text", required: false },
-    { label: "Size", name: "size", type: "number", required: false },
-  ];
-
-  const areaData = [
-    { label: "Description", name: "description", required: false },
-    { label: "Ingredients", name: "ingredients", required: false },
-    { label: "Features", name: "features", required: false },
-  ];
-
-  const selectDataEdit = [
-    {
-      name: "brandId",
-      value: "id",
-      option: "name",
-      action: getBrands,
-      store: "brands",
-      lable: "Change brand",
-      required: false,
-      mode: false,
-    },
-
-    {
-      name: "categoryId",
-      value: "id",
-      option: "name",
-      action: getCategories,
-      store: "categories",
-      lable: "Change category",
-      required: false,
-      mode: false,
-    },
-
-    {
-      name: "productGroupId",
-      value: "id",
-      option: "name",
-      action: getProductGroups,
-      store: "productGroups",
-      lable: "Change product group",
-      required: false,
-      mode: false,
-    },
-  ];
-
-  const switchData = [
-    {
-      label: "Bundled",
-      name: "bundled",
-      default: Object.entries(selectCoreProduct).length !== 0 && selectCoreProduct.bundled,
-      required: false,
-    },
-    {
-      label: "SecondaryImages",
-      name: "secondaryImages",
-      default: Object.entries(selectCoreProduct).length !== 0 && selectCoreProduct.secondaryImages,
-      required: false,
-    },
-    {
-      label: "Reviewed",
-      name: "reviewed",
-      default: Object.entries(selectCoreProduct).length !== 0 && selectCoreProduct.reviewed,
-      required: false,
-    },
-    {
-      label: "Product Options",
-      name: "productOptions",
-      default: Object.entries(selectCoreProduct).length !== 0 && selectCoreProduct.productOptions,
-      required: false,
-    },
-  ];
-
-  const initialValue = {
-    title: Object.entries(selectCoreProduct).length !== 0 && selectCoreProduct.title,
-    size: Object.entries(selectCoreProduct).length !== 0 && selectCoreProduct.size,
-    image: Object.entries(selectCoreProduct).length !== 0 && selectCoreProduct.image,
-    secondaryImages: Object.entries(selectCoreProduct).length !== 0 && selectCoreProduct.secondaryImages,
-    description: Object.entries(selectCoreProduct).length !== 0 && selectCoreProduct.description,
-    features: Object.entries(selectCoreProduct).length !== 0 && selectCoreProduct.features,
-    ingredients: Object.entries(selectCoreProduct).length !== 0 && selectCoreProduct.ingredients,
-    bundled: Object.entries(selectCoreProduct).length !== 0 && selectCoreProduct.bundled,
-    brandId: Object.entries(selectCoreProduct).length !== 0 && selectCoreProduct.brandId,
-    categoryId: Object.entries(selectCoreProduct).length !== 0 && selectCoreProduct.categoryId,
-    productGroupId: Object.entries(selectCoreProduct).length !== 0 && selectCoreProduct.productGroupId,
-    reviewed: Object.entries(selectCoreProduct).length !== 0 && selectCoreProduct.reviewed,
-  };
-
   useEffect(() => {
     const queryString = qs.stringify(queryParams);
     history.replace(`/${pathParam}/${queryString}`);
@@ -197,13 +120,13 @@ const CoreProductsList = (props) => {
   }, [dispatch, queryParams]);
   //queryParams was dependency
 
-  useEffect(() => {
-    if (Object.entries(selectCoreProduct).length !== 0) {
-      const selectProduct = rows.find((product) => product.id === selectCoreProduct.id);
+  // useEffect(() => {
+  //   if (Object.entries(selectCoreProduct).length !== 0) {
+  //     const selectProduct = rows.find((product) => product.id === selectCoreProduct.id);
 
-      setSelectCoreProduct(selectProduct);
-    }
-  }, [rows, selectCoreProduct]);
+  //     setSelectCoreProduct(selectProduct);
+  //   }
+  // }, [rows, selectCoreProduct]);
 
   const onChangePage = (page, pageSize) => {
     setQueryParams((queryParams) => {
@@ -308,27 +231,30 @@ const CoreProductsList = (props) => {
     });
   };
 
-  const handleEditProduct = (id) => {
-    const selectProduct = rows.find((product) => product.id === id);
+  // const handleEditProduct = (id) => {
+  //   const selectProduct = rows.find((product) => product.id === id);
 
-    setSelectCoreProduct(selectProduct);
-  };
+  //   setSelectCoreProduct(selectProduct);
+  // };
 
-  const handleMergeProduct = (id) => {
-    dispatch(
-      mergeCoreProduct({
-        baseId: Number(queryParams.productId),
-        secondaryIds: id.toString(),
-      })
-    ).then(() => getCoreProducts(queryParams));
-  };
+  // const handleMergeProduct = (id) => {
+  //   dispatch(
+  //     mergeCoreProduct({
+  //       baseId: Number(queryParams.productId),
+  //       secondaryIds: id.toString(),
+  //     })
+  //   ).then(() => getCoreProducts(queryParams));
+  // };
 
   const onSendForm = (values) => {
-    const data = values;
+    const data = { categoryId: values.category, brandId: values.brand, size: values.size, title: values.name };
     if (coreImage.length) {
       Object.assign(data, { image: coreImage });
     }
-    dispatch(editCoreProduct("EDIT_CORE_PRODUCT_LIST", selectCoreProduct.id, data)).then(() => setCoreImage(""));
+    dispatch(editCoreProduct("EDIT_CORE_PRODUCT_LIST", values.id, data)).then(() => {
+      setCoreImage("");
+      dispatch(getCoreProducts(queryParams));
+    });
   };
 
   return (
@@ -416,6 +342,7 @@ const CoreProductsList = (props) => {
               perPage={Number(queryParams.perPage)}
               setPage={onChangePage}
               setPerPage={onChangePerPage}
+              onSendForm={onSendForm}
             />
           </div>
         </>

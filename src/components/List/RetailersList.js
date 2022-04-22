@@ -9,6 +9,7 @@ import CoreForm from "../ModalFrom/CoreForm";
 import { STATE_STATUSES } from "../../utils/app";
 import { notification } from "antd";
 import RetailerTable from "components/Tables/RetailerTable";
+import RetailerTableEditable from "components/Tables/RetailerTableEditable";
 
 const RetailersList = (props) => {
   const {
@@ -86,7 +87,13 @@ const RetailersList = (props) => {
             perPage={Number(queryParams.perPage)}
             setPage={setPage}
             setPerPage={setPerPage}
-            x
+          />
+          <RetailerTableEditable
+            data={searchedData}
+            page={Number(queryParams.page)}
+            perPage={Number(queryParams.perPage)}
+            setPage={setPage}
+            setPerPage={setPerPage}
           />
         </div>
       ) : (
@@ -95,5 +102,11 @@ const RetailersList = (props) => {
     </>
   );
 };
+
+
+
+
+
+
 
 export default withRouter(RetailersList);

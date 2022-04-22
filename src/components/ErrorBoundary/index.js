@@ -3,9 +3,14 @@ import React, { Component } from "react";
 import { Link, Redirect } from "react-router-dom";
 
 import "./styles.scss";
-
 class ErrorBoundary extends Component {
-  state = { hasError: false, redirect: false, timer: null };
+  constructor(props) {
+    super(props);
+    this.state = {
+      hasError: false,
+    };
+  }
+  // state = { hasError: false, redirect: false, timer: null };
 
   static getDerivedStateFromError() {
     return { hasError: true };
@@ -15,19 +20,19 @@ class ErrorBoundary extends Component {
     console.error("ErrorBoundary caught error", error, info);
   }
 
-  componentDidUpdate() {
-    if (this.state.hasError) {
-      this.state.timer = setTimeout(() => this.setState({ redirect: true }), 5000);
-    } else {
-      clearTimeout(this.state.timer);
-    }
-  }
+  // componentDidUpdate() {
+  //   if (this.state.hasError) {
+  //     this.state.timer = setTimeout(() => this.setState({ redirect: true }), 5000);
+  //   } else {
+  //     clearTimeout(this.state.timer);
+  //   }
+  // }
 
   render() {
-    if (this.state.redirect) {
-      this.setState({ redirect: false, hasError: false });
-      return <Redirect to="/" />;
-    }
+    // if (this.state.redirect) {
+    //   this.setState({ redirect: false, hasError: false });
+    //   return <Redirect to="/" />;
+    // }
 
     if (this.state.hasError) {
       return (
@@ -35,10 +40,10 @@ class ErrorBoundary extends Component {
           <h1>
             There was an error on this website. Wait for a few seconds or{" "}
             <Link
-              onClick={() => {
-                clearTimeout(this.state.timer);
-                this.setState({ redirect: false, hasError: false });
-              }}
+              // onClick={() => {
+              //   clearTimeout(this.state.timer);
+              //   this.setState({ redirect: false, hasError: false });
+              // }}
               to="/"
             >
               Click here
