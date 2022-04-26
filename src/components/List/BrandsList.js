@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { withRouter } from "react-router-dom";
 import qs from "query-string";
-import { getBrands, createBrandBrands, getManufacturers } from "../../store/manufacturersBrands/action";
+import { editBrand, getBrands, createBrandBrands, getManufacturers } from "../../store/manufacturersBrands/action";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
 import CoreForm from "../ModalFrom/CoreForm";
@@ -96,7 +96,12 @@ const BrandsList = (props) => {
       };
     });
   };
-
+  function onFinishEdit(values) {
+    const { name, brandId, color, manufacturerId, id } = values;
+    dispatch(editBrand({ name, color, manufacturerId, brandId }, id)).then(() => {
+      dispatch(getBrands());
+    });
+  }
   return (
     <>
       <div className="item-title">Brands</div>
@@ -109,6 +114,7 @@ const BrandsList = (props) => {
           perPage={Number(queryParams.perPage)}
           setPage={setPage}
           setPerPage={setPerPage}
+          onFinishEdit={onFinishEdit}
         />
       ) : (
         <Loader />

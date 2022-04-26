@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { withRouter } from "react-router-dom";
 import qs from "query-string";
-import { getUsers, createUser } from "../../store/users/action";
+import { getUsers, createUser, editUser } from "../../store/users/action";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
 import CoreForm from "../ModalFrom/CoreForm";
@@ -12,7 +12,6 @@ import SelectBox from "../ModalFrom/Select";
 import { ClearOutlined } from "@ant-design/icons";
 import { notification } from "antd";
 import UsersTable from "components/Tables/UsersTable";
-
 const UsersList = (props) => {
   const {
     // getUsers,
@@ -140,7 +139,12 @@ const UsersList = (props) => {
       };
     });
   };
-
+  const handleEditUser = (values) => {
+    const { first_name, last_name, companyId, email, is_staff, status, id } = values;
+    dispatch(editUser(id, { first_name, last_name, companyId, email, is_staff, status })).then(() => {
+      dispatch(getUsers());
+    });
+  };
   return (
     <>
       <div className="item-title">Users</div>
@@ -180,6 +184,7 @@ const UsersList = (props) => {
             perPage={Number(queryParams.perPage)}
             setPage={setPage}
             setPerPage={setPerPage}
+            handleEditUser={handleEditUser}
           />
         </>
       ) : (

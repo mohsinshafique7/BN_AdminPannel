@@ -47,6 +47,9 @@ export const editManufacturer = (data, id) => {
       url: `${path}/admin/manufacturers/${id}`,
       data,
     },
+    meta: {
+      asPromise: true,
+    },
   };
 };
 
@@ -131,13 +134,16 @@ export const createBrandBrands = (data) => {
 };
 
 export const EDIT_BRAND = "EDIT_BRAND";
-export const editBrand = (name, manufacturerId, id) => {
+export const editBrand = (data, id) => {
   return {
     type: EDIT_BRAND,
     request: {
       method: "PUT",
       url: `${path}/admin/brands/${id}`,
-      data: name,
+      data,
+    },
+    meta: {
+      asPromise: true,
     },
   };
 };

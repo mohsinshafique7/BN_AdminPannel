@@ -180,7 +180,7 @@ const CategoryDesc = ({
             </Button>
           </Popconfirm>
           <CoreForm
-            title={"Edit Category"}
+            title={"Edits Category"}
             // categorySelect={true}
             initialValue={initialValue}
             inputData={inputData}

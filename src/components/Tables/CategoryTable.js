@@ -5,6 +5,8 @@ import { FilterFilled } from "@ant-design/icons";
 import _ from "lodash";
 import moment from "moment";
 import styled from "styled-components";
+import CoreForm from "components/ModalFrom/CoreForm";
+import { categoryEditInput, setColor, renderTableData, getFilter } from "../../utils/FormInputs";
 export const Styles = styled.div`
   margin-top: 15px;
 
@@ -14,43 +16,63 @@ export const Styles = styled.div`
     margin-top: 25px;
   }
 `;
-const CategoryTable = ({ changeSubscription, data, page, perPage, setPage, setPerPage }) => {
+const CategoryTable = ({ changeSubscription, data, page, perPage, setPage, setPerPage, handleCategoryEdit }) => {
+  const formInputs = categoryEditInput();
   const dataSource = data.map((item) => {
     return {
       key: item.id,
+      categoryId: item.categoryId,
       name: item.name,
       breadCrumb: item.breadcrumbs,
       subscription: item.status.subscription,
-      pricePer: item.pricePer ? item.pricePer : "-",
-      measuringUnit: item.measurementUnit ? item.measurementUnit : "-",
+      pricePer: item.pricePer,
+      measuringUnit: item.measurementUnit,
       color: item.color,
       dateCreated: item.createdAt,
     };
   });
-  console.log(data);
-  const limit = page * perPage + perPage < dataSource.length ? page * perPage + perPage : dataSource.length;
+  const renderData = renderTableData(page, perPage, dataSource);
 
-  const renderData = dataSource.slice(page * perPage, limit);
-
-  const retailerFilters = _.uniq(_.map(renderData, "name")).map((item) => {
-    return { text: item, value: item };
-  });
+  const retailerFilters = getFilter(renderData, "name");
 
   const onChangePage = (page, pageSize) => {
     setPage(page - 1);
   };
-  const setColor = (color) => {
-    return { backgroundColor: color, padding: "10px", border: "1px solid green" };
-  };
+
   const onChangeSize = (page, pageSize) => {
     setPerPage(pageSize);
   };
   const columns = [
     {
+      title: "Edit",
+      dataIndex: "editUser",
+      key: "editUser",
+      width: "5%",
+      render: (_, record) => (
+        <CoreForm
+          title={"Edits"}
+          // categorySelect={true}
+          initialValue={{
+            id: record.key,
+            name: record.name,
+            color: record.color,
+            categoryId: record.categoryId,
+            subscription: record.subscription,
+            pricePer: record.pricePer,
+            measurementUnit: record.measurementUnit,
+          }}
+          inputData={formInputs.inputData}
+          selectData={formInputs.selectData}
+          switchData={formInputs.switchData}
+          onSendForm={handleCategoryEdit}
+        />
+      ),
+    },
+    {
       title: "Name",
       dataIndex: "name",
       key: "name",
-      width: "40%",
+      width: "15%",
       render: (text, record) => <Link to={`/category/${record.key}/page=0&perPage=10`}>{text}</Link>,
       sorter: (a, b) => {
         if (a.name < b.name) {
@@ -148,7 +170,7 @@ const CategoryTable = ({ changeSubscription, data, page, perPage, setPage, setPe
       title: "Date Created",
       dataIndex: "dateCreated",
       key: "dateCreated",
-      width: "10%",
+      width: "30%",
       render: (text) => moment(text).format("YYYY-MM-DD hh:mm"),
       filterIcon: (filtered) => <FilterFilled style={{ color: filtered ? "#1890ff" : undefined }} />,
     },

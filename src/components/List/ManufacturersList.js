@@ -9,6 +9,7 @@ import { STATE_STATUSES } from "../../utils/app";
 import CoreForm from "../ModalFrom/CoreForm";
 import { notification } from "antd";
 import ManufacturersTable from "components/Tables/ManufacturersTable";
+import { editManufacturer } from "../../store/manufacturersBrands/action";
 
 const ManufacturersList = (props) => {
   const {
@@ -27,7 +28,6 @@ const ManufacturersList = (props) => {
     { label: "Name", name: "name", type: "text", required: true },
     { label: "Colour", name: "color", type: "text", required: true },
   ];
-
   const selectData = [
     { name: "brands", value: "id", option: "name", action: getBrands, store: "brands", lable: "Brands", required: false, mode: "multiple" },
   ];
@@ -58,7 +58,7 @@ const ManufacturersList = (props) => {
 
   const searchedData = useMemo(() => {
     const search = new RegExp(searchValue, "gi");
-    return manufacturers.filter((item) => item.name.match(search) || item?.brands.some((a) => a.name.match(search)));
+    return manufacturers.filter((item) => item.name.match(search));
   }, [searchValue, manufacturers]);
 
   const setPage = (page) => {
@@ -78,12 +78,17 @@ const ManufacturersList = (props) => {
       };
     });
   };
-
+  function handleEditManufacturer(values) {
+    const { name, color, id } = values;
+    dispatch(editManufacturer({ manufacturer: { name, color } }, id)).then(() => {
+      dispatch(getManufacturers());
+    });
+  }
   return (
     <>
       <div className="item-title">Manufacturers</div>
       <Search />
-      <CoreForm title={"Create Manufacturer"} inputData={inputData} selectData={selectData} onSendForm={onSendForm} />
+      <CoreForm title={"Create  Manufacturer"} inputData={inputData} selectData={selectData} onSendForm={onSendForm} />
       {status !== STATE_STATUSES.PENDING ? (
         <div>
           <ManufacturersTable
@@ -92,6 +97,7 @@ const ManufacturersList = (props) => {
             perPage={Number(queryParams.perPage)}
             setPage={setPage}
             setPerPage={setPerPage}
+            handleEditManufacturer={handleEditManufacturer}
           />
         </div>
       ) : (

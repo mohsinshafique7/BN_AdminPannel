@@ -106,7 +106,7 @@ const CategoriesList = (props) => {
       name,
       status: { subscription },
     } = item[0];
-    console.log(id, categoryId, color, name, subscription);
+    // console.log(id, categoryId, color, name, subscription);
     const data = {
       categoryId,
       color,
@@ -117,7 +117,13 @@ const CategoriesList = (props) => {
     };
     dispatch(editCategory(data, id)).then(() => dispatch(getCategories()));
   };
-
+  function handleCategoryEdit(values) {
+    const id = values.id;
+    const data = { ...values, status: { subscription: values.subscription } };
+    delete data["subscription"];
+    delete data["id"];
+    dispatch(editCategory(data, id)).then(() => dispatch(getCategories()));
+  }
   return (
     <>
       <div className="item-title">Categories</div>
@@ -138,6 +144,7 @@ const CategoriesList = (props) => {
           setPage={setPage}
           setPerPage={setPerPage}
           changeSubscription={changeSubscription}
+          handleCategoryEdit={handleCategoryEdit}
         />
       ) : (
         <Loader />

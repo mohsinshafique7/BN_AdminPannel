@@ -1,5 +1,5 @@
 @import "./utils/colors.scss";
-
+@import "./assets/fonts/index.css";
 html,
 body,
 div,
@@ -103,7 +103,9 @@ section {
   display: block;
 }
 body {
+  font-family: "Gilroy-Regular";
   line-height: 1;
+  overflow: hidden;
 }
 ol,
 ul {
@@ -131,10 +133,6 @@ table {
   .App {
     height: 100%;
   }
-}
-
-body {
-  overflow: hidden;
 }
 
 .ant-layout {
@@ -192,9 +190,9 @@ body {
   }
 }
 
-.modal-create .ant-modal-footer .ant-btn.ant-btn-primary {
-  display: none;
-}
+// .modal-create .ant-modal-footer .ant-btn.ant-btn-primary {
+//   display: none;
+// }
 
 .item-title {
   text-align: center;
@@ -386,11 +384,11 @@ body {
 .modal-form.ant-modal {
   top: 0;
   width: 720px !important;
-  .ant-modal-footer {
-    .ant-btn.ant-btn-primary {
-      display: none;
-    }
-  }
+  // .ant-modal-footer {
+  //   .ant-btn.ant-btn-primary {
+  //     display: none;
+  //   }
+  // }
   .ant-row.ant-form-item {
     display: flex;
     flex-direction: column;

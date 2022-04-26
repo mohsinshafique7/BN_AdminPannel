@@ -50,6 +50,9 @@ export const editProductGroup = (data, id) => {
       url: `${path}/admin/product-groups/${id}`,
       data,
     },
+    meta: {
+      asPromise: true,
+    },
   };
 };
 

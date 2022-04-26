@@ -3,8 +3,9 @@ import { Table, Pagination } from "antd";
 import { Link } from "react-router-dom";
 import { FilterFilled } from "@ant-design/icons";
 import _ from "lodash";
-import moment from "moment";
 import styled from "styled-components";
+import CoreForm from "components/ModalFrom/CoreForm";
+import { CustomGroupEditInput, renderTableData, getFilter } from "../../utils/FormInputs";
 export const Styles = styled.div`
   margin-top: 15px;
 
@@ -14,7 +15,8 @@ export const Styles = styled.div`
     margin-top: 25px;
   }
 `;
-const ProductGroupTable = ({ data, page, perPage, setPage, setPerPage }) => {
+const ProductGroupTable = ({ data, page, perPage, setPage, setPerPage, handleProductGroupEdit }) => {
+  const formInputs = CustomGroupEditInput();
   const dataSource = data.map((item) => {
     return {
       key: item.id,
@@ -24,35 +26,13 @@ const ProductGroupTable = ({ data, page, perPage, setPage, setPerPage }) => {
       company: item?.company?.name,
       companyId: item?.company?.id,
       coreProduct: item.coreProduct.length,
-      // coreProducts: item.coreProduct,
-      // children:
-      //   item.coreProduct.length > 0
-      //     ? item.coreProduct.map((itm) => {
-      //         return {
-      //           key: itm.id,
-      //           name: itm.title,
-      //           render: (text) => <Link to={"/home"}>{text.name}</Link>,
-      //         };
-      //       })
-      //     : null,
-      dateCreated: item.createdAt,
     };
   });
 
-  const limit = page * perPage + perPage < dataSource.length ? page * perPage + perPage : dataSource.length;
-
-  const renderData = dataSource.slice(page * perPage, limit);
-
-  const productFilters = _.uniq(_.map(renderData, "name")).map((item) => {
-    return { text: item, value: item };
-  });
-
-  const usersFilter = _.uniq(_.map(renderData, "user")).map((item) => {
-    return { text: item, value: item };
-  });
-  const compnayFilter = _.uniq(_.map(renderData, "company")).map((item) => {
-    return { text: item, value: item };
-  });
+  const renderData = renderTableData(page, perPage, dataSource);
+  const productFilters = getFilter(renderData, "name");
+  const usersFilter = getFilter(renderData, "user");
+  const compnayFilter = getFilter(renderData, "company");
   const onChangePage = (page, pageSize) => {
     setPage(page - 1);
   };
@@ -60,7 +40,28 @@ const ProductGroupTable = ({ data, page, perPage, setPage, setPerPage }) => {
   const onChangeSize = (page, pageSize) => {
     setPerPage(pageSize);
   };
+
   const columns = [
+    {
+      title: "Edit",
+      dataIndex: "editUser",
+      key: "editUser",
+      width: "5%",
+      render: (_, record) => (
+        <CoreForm
+          title={"Edit"}
+          initialValue={{
+            name: record.name,
+            userId: record.userId,
+            companyId: record.companyId,
+            id: record.key,
+          }}
+          inputData={formInputs.inputData}
+          selectData={formInputs.selectData}
+          onSendForm={handleProductGroupEdit}
+        />
+      ),
+    },
     {
       title: "Name",
       dataIndex: "name",
@@ -86,7 +87,7 @@ const ProductGroupTable = ({ data, page, perPage, setPage, setPerPage }) => {
       title: "User",
       dataIndex: "user",
       key: "user",
-      width: "20%",
+      width: "25%",
       filterSearch: true,
       render: (text, record) => <Link to={`/user/${record.userId}`}>{text}</Link>,
       sorter: (a, b) => {
@@ -116,14 +117,6 @@ const ProductGroupTable = ({ data, page, perPage, setPage, setPerPage }) => {
       dataIndex: "coreProduct",
       key: "coreProduct",
       width: "10%",
-    },
-    {
-      title: "Date Created",
-      dataIndex: "dateCreated",
-      key: "dateCreated",
-      width: "10%",
-      render: (text) => moment(text).format("YYYY-MM-DD hh:mm"),
-      filterIcon: (filtered) => <FilterFilled style={{ color: filtered ? "#1890ff" : undefined }} />,
     },
   ];
 

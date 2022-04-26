@@ -5,6 +5,8 @@ import { FilterFilled } from "@ant-design/icons";
 import _ from "lodash";
 import moment from "moment";
 import styled from "styled-components";
+import CoreForm from "components/ModalFrom/CoreForm";
+import { usersEditInputs, renderTableData, getFilter } from "../../utils/FormInputs";
 export const Styles = styled.div`
   margin-top: 15px;
 
@@ -14,7 +16,9 @@ export const Styles = styled.div`
     margin-top: 25px;
   }
 `;
-const UsersTable = ({ data, page, perPage, setPage, setPerPage }) => {
+const UsersTable = ({ data, page, perPage, setPage, setPerPage, handleEditUser }) => {
+  const formInputs = usersEditInputs();
+
   const dataSource = data.map((item) => {
     return {
       key: item.id,
@@ -23,35 +27,55 @@ const UsersTable = ({ data, page, perPage, setPage, setPerPage }) => {
       status: item.status,
       company: item?.company?.name,
       dateCreated: item.createdAt,
+      first_name: item.first_name,
+      last_name: item.last_name,
+      companyId: item.companyId,
+      is_stuff: item.is_stuff,
     };
   });
-  const limit = page * perPage + perPage < dataSource.length ? page * perPage + perPage : dataSource.length;
+  const renderData = renderTableData(page, perPage, dataSource);
+  const nameFilters = getFilter(renderData, "name");
+  const emailFilters = getFilter(renderData, "email");
+  const companyFilter = getFilter(renderData, "company");
 
-  const renderData = dataSource.slice(page * perPage, limit);
-
-  const nameFilters = _.uniq(_.map(renderData, "name")).map((item) => {
-    return { text: item, value: item };
-  });
-
-  const emailFilters = _.uniq(_.map(renderData, "email")).map((item) => {
-    return { text: item, value: item };
-  });
-  const companyFilter = _.uniq(_.map(renderData, "company")).map((item) => {
-    return { text: item, value: item };
-  });
-  const onChangePage = (page, pageSize) => {
+  const onChangePage = (page) => {
     setPage(page - 1);
   };
 
   const onChangeSize = (page, pageSize) => {
     setPerPage(pageSize);
   };
+
   const columns = [
+    {
+      title: "Edit",
+      dataIndex: "editUser",
+      key: "editUser",
+      width: "5%",
+      render: (text, record) => (
+        <CoreForm
+          title={"Edit"}
+          initialValue={{
+            first_name: record.first_name,
+            last_name: record.last_name,
+            email: record.email,
+            companyId: record.companyId,
+            is_stuff: record.is_stuff,
+            status: record.status,
+            id: record.key,
+          }}
+          selectData={formInputs.selectData}
+          inputData={formInputs.inputData}
+          switchData={formInputs.switchData}
+          onSendForm={handleEditUser}
+        />
+      ),
+    },
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
-      width: "20%",
+      width: "15%",
       render: (text, record) => <Link to={`/user/${record.key}`}>{text}</Link>,
       sorter: (a, b) => {
         if (a.name < b.name) {
@@ -71,7 +95,7 @@ const UsersTable = ({ data, page, perPage, setPage, setPerPage }) => {
       title: "Email",
       dataIndex: "email",
       key: "email",
-      width: "30%",
+      width: "15%",
       sorter: (a, b) => {
         if (a.email < b.email) {
           return -1;
@@ -92,7 +116,7 @@ const UsersTable = ({ data, page, perPage, setPage, setPerPage }) => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      width: "10%",
+      width: "15%",
       sorter: (a, b) => a.status.length - b.status.length,
       filterIcon: (filtered) => <FilterFilled style={{ color: filtered ? "#1890ff" : undefined }} />,
       filters: [
@@ -124,7 +148,7 @@ const UsersTable = ({ data, page, perPage, setPage, setPerPage }) => {
       title: "Date Created",
       dataIndex: "dateCreated",
       key: "dateCreated",
-      width: "20%",
+      width: "30%",
       render: (text) => moment(text).format("YYYY-MM-DD hh:mm"),
       filterIcon: (filtered) => <FilterFilled style={{ color: filtered ? "#1890ff" : undefined }} />,
     },

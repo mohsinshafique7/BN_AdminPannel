@@ -6,7 +6,6 @@ import SwitchBox from "./SwitchBox";
 
 const CoreForm = (props) => {
   const { initialValue } = props;
-
   const [form] = Form.useForm();
   const formRef = useRef(null);
 
@@ -14,11 +13,11 @@ const CoreForm = (props) => {
 
   const [visible, setVisible] = useState(false);
 
-  useEffect(() => {
-    if (initialValue) {
-      form.setFieldsValue(initialValue);
-    }
-  }, [initialValue, form]);
+  // useEffect(() => {
+  //   if (initialValue) {
+  //     form.setFieldsValue(initialValue);
+  //   }
+  // }, [initialValue, form]);
 
   const onFinish = (values) => {
     props.onSendForm(values);
@@ -37,18 +36,31 @@ const CoreForm = (props) => {
       </Button>
       <Modal
         // forceRender={true}
-        className={`modal-form ${props.className}`}
+        //className={`modal-form ${props.className}`}
         title={props.title}
         visible={visible}
+        okText="Submit"
         onCancel={() => setVisible(false)}
+        onOk={() => {
+          form
+            .validateFields()
+            .then((values) => {
+              form.resetFields();
+              setVisible(false);
+              props.onSendForm(values);
+            })
+            .catch((info) => {
+              console.log("Validate Failed:", info);
+            });
+        }}
       >
         <Form
           ref={formRef}
           form={form}
           name="core"
           initialValues={props.initialValue ? props.initialValue : ""}
-          onFinish={onFinish}
-          onFinishFailed={onFinishFailed}
+          // onFinish={onFinish}
+          // onFinishFailed={onFinishFailed}
         >
           {props.uploadData ? <UploadImg handleSetImage={props.handleSetImage} initialImage={initialValue.image} /> : null}
 
@@ -56,6 +68,7 @@ const CoreForm = (props) => {
             ? props.inputData.map((item, index) => (
                 <Form.Item
                   key={index}
+                  style={item?.display === false ? { display: "none" } : {}}
                   label={item.label}
                   name={item.name}
                   rules={[{ required: item.required, message: `Please input ${item.label}!` }]}
@@ -130,11 +143,11 @@ const CoreForm = (props) => {
               ))
             : null}
 
-          <Form.Item>
+          {/* <Form.Item>
             <Button type="primary" htmlType="submit">
               Submit
             </Button>
-          </Form.Item>
+          </Form.Item> */}
         </Form>
       </Modal>
     </div>

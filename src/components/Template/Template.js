@@ -15,13 +15,12 @@ import {
   WarningOutlined,
   CodeSandboxOutlined,
   HeatMapOutlined,
-  SafetyCertificateOutlined,
   SubnodeOutlined,
   ContainerOutlined,
 } from "@ant-design/icons";
 import { Styles } from "./style";
 import Header from "../Header/Header";
-import logo1 from "../../assets/images/logo_bn.svg";
+import logo1 from "../../assets/images/general-logo-white.svg";
 
 const { Content, Sider } = Layout;
 
@@ -36,7 +35,6 @@ const Template = (props) => {
 
   useEffect(() => {
     const activeLink = props.location.pathname.split("/")[1];
-    console.log("Links", activeLink);
     setActiveLink(activeLink);
   }, [props.location.pathname]);
 
@@ -81,13 +79,23 @@ const Template = (props) => {
             <Menu.Item key="product-groups">
               <Link to={"/product-groups/page=0&perPage=10"}>
                 <FileProtectOutlined />
-                <span className="color-selected">Product Groups</span>
+                <span className="color-selected">Custom Groups</span>
               </Link>
             </Menu.Item>
             <Menu.Item key="companies">
               <Link to={"/companies/page=0&perPage=10"}>
                 <ContainerOutlined />
                 <span className="color-selected">Companies</span>
+              </Link>
+            </Menu.Item>
+            <Menu.Item key="core-products">
+              <Link
+                to={
+                  "/core-products/direction=ASC&noBrand=false&notReviewed=false&noCategory=false&issues=false&order=title&page=1&perPage=10&productId=null"
+                }
+              >
+                <CodeSandboxOutlined />
+                <span className="color-selected">Core Products</span>
               </Link>
             </Menu.Item>
             {/* <Menu.Item key="scrapper-links">
@@ -115,16 +123,7 @@ const Template = (props) => {
                 <span className="color-selected">Product Mapping</span>
               </Link>
             </Menu.Item>
-            <Menu.Item key="core-products">
-              <Link
-                to={
-                  "/core-products/direction=ASC&noBrand=false&notReviewed=false&noCategory=false&issues=false&order=title&page=1&perPage=10&productId=null"
-                }
-              >
-                <CodeSandboxOutlined />
-                <span className="color-selected">Core Products</span>
-              </Link>
-            </Menu.Item>
+
             <Menu.Item key="notifications">
               <Link to={"/notifications/notification/page=0&perPage=10"}>
                 <NotificationOutlined />

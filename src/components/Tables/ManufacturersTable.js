@@ -4,7 +4,10 @@ import { Link } from "react-router-dom";
 import { FilterFilled } from "@ant-design/icons";
 import _ from "lodash";
 import moment from "moment";
+import CoreForm from "components/ModalFrom/CoreForm";
 import styled from "styled-components";
+import { manufacturerEditInputs, renderTableData, getFilter, setColor } from "../../utils/FormInputs";
+
 export const Styles = styled.div`
   margin-top: 15px;
 
@@ -14,7 +17,8 @@ export const Styles = styled.div`
     margin-top: 25px;
   }
 `;
-const ManufacturersTable = ({ data, page, perPage, setPage, setPerPage }) => {
+const ManufacturersTable = ({ data, page, perPage, setPage, setPerPage, handleEditManufacturer }) => {
+  const formInputs = manufacturerEditInputs();
   const dataSource = data.map((item) => {
     return {
       key: item.id,
@@ -26,32 +30,44 @@ const ManufacturersTable = ({ data, page, perPage, setPage, setPerPage }) => {
       dateCreated: item.createdAt,
     };
   });
-  const limit = page * perPage + perPage < dataSource.length ? page * perPage + perPage : dataSource.length;
 
-  const renderData = dataSource.slice(page * perPage, limit);
+  const renderData = renderTableData(page, perPage, dataSource);
 
-  const manufacturerFilters = _.uniq(_.map(renderData, "name")).map((item) => {
-    return { text: item, value: item };
-  });
+  const manufacturerFilters = getFilter(renderData, "name");
 
-  // const brandFilters = _.uniq(_.map(renderData, "brand")).map((item) => {
-  //   return { text: item, value: item };
-  // });
   const onChangePage = (page, pageSize) => {
     setPage(page - 1);
   };
-  const setColor = (color) => {
-    return { backgroundColor: color, padding: "10px", border: "1px solid green" };
-  };
+
   const onChangeSize = (page, pageSize) => {
     setPerPage(pageSize);
   };
+
   const columns = [
+    {
+      title: "Edit",
+      dataIndex: "editUser",
+      key: "editUser",
+      width: "5%",
+      render: (_, record) => (
+        <CoreForm
+          title={"Edit"}
+          initialValue={{
+            name: record.name,
+            color: record.color,
+            id: record.key,
+          }}
+          inputData={formInputs.inputData}
+          onSendForm={handleEditManufacturer}
+        />
+      ),
+    },
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
-      width: "10%",
+      width: "15%",
+      align: "left",
       render: (text, record) => <Link to={`/manufacturer/${record.key}/page=0&perPage=10`}>{text}</Link>,
       sorter: (a, b) => {
         if (a.name < b.name) {
@@ -71,7 +87,7 @@ const ManufacturersTable = ({ data, page, perPage, setPage, setPerPage }) => {
     {
       title: "Brand",
       dataIndex: "brand",
-      width: "70%",
+      width: "60%",
       key: "brand",
       // filterSearch: true,
       render: (text, record) =>

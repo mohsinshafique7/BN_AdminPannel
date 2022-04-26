@@ -10,6 +10,7 @@ import CoreForm from "../ModalFrom/CoreForm";
 import { STATE_STATUSES } from "../../utils/app";
 import { notification } from "antd";
 import CompaniesTable from "components/Tables/CompaniesTable";
+import { editCompany } from "../../store/companies/action";
 
 const CompaniesList = (props) => {
   const {
@@ -76,7 +77,13 @@ const CompaniesList = (props) => {
       };
     });
   };
-
+  function handleEditCompany(values) {
+    const filtersStartDate = values.filtersStartDate ? values.filtersStartDate.format("YYYY-MM-DD") : moment().format("YYYY-MM-DD");
+    const { name, id } = values;
+    dispatch(editCompany({ name, filtersStartDate }, id)).then(() => {
+      dispatch(getCompanies());
+    });
+  }
   return (
     <>
       <div className="item-title">Companies</div>
@@ -90,6 +97,7 @@ const CompaniesList = (props) => {
             perPage={Number(queryParams.perPage)}
             setPage={setPage}
             setPerPage={setPerPage}
+            handleEditCompany={handleEditCompany}
           />
         </div>
       ) : (

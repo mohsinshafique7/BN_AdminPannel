@@ -265,7 +265,7 @@ const UserDesc = ({
 
           <CoreForm title={"Reset Password"} passwordData={passwordData} onSendForm={handleResetPassword} />
 
-          <CoreForm title={"Add Source Category"} selectData={sourceData} onSendForm={addSourceCategory} />
+          {/* <CoreForm title={"Add Source Category"} selectData={sourceData} onSendForm={addSourceCategory} /> */}
         </div>
       </div>
       <div>

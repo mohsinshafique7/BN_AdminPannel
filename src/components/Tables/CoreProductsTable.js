@@ -1,14 +1,11 @@
-import React from "react";
-import { Table, Pagination, Switch, Typography, Popconfirm, Form, InputNumber, Input, Select } from "antd";
+import React, { useState } from "react";
+import { Table, Pagination, Switch, Typography, Popconfirm, Form } from "antd";
 import { Link } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { FilterFilled } from "@ant-design/icons";
 import _ from "lodash";
 import moment from "moment";
 import styled from "styled-components";
-import { setEditKeyValue } from "../../store/filters/action";
-import SelectBox from "components/ModalFrom/SelectBox";
-import { getBrands } from "../../store/manufacturersBrands/action";
 import Selector from "components/FormItems/Selector";
 import NumberInput from "components/FormItems/NumberInput";
 import TextInput from "components/FormItems/TextInput";
@@ -22,20 +19,15 @@ export const Styles = styled.div`
   }
 `;
 const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, onSendForm }) => {
+  console.log(data);
   const [form] = Form.useForm();
-  const { categories, brands, editingKey } = useSelector((state) => {
+  const [editingKey, setEditingKey] = useState("");
+  const { categories, brands } = useSelector((state) => {
     return {
-      editingKey: state.filters.editingKey,
       brands: state.manufacturersBrands.brands,
       categories: state.categories.categories,
     };
   });
-  console.log(
-    "brands",
-    brands.find((item) => item.name === "Tesco Finest")
-  );
-  const dispatch = useDispatch();
-  console.log(data);
   const dataSource = data.map((item) => {
     return {
       key: item.id,
@@ -59,10 +51,9 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, on
     return { text: item, value: item };
   });
   const cancel = () => {
-    dispatch(setEditKeyValue(""));
+    setEditingKey("");
   };
   const isEditing = (record) => record.key === editingKey;
-
   const edit = (record) => {
     form.setFieldsValue({
       id: record.key,
@@ -71,14 +62,14 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, on
       brand: record.brandId,
       category: record.categoryId,
     });
-    dispatch(setEditKeyValue(record.key));
+    setEditingKey(record.key);
   };
 
-  const save = async (key) => {
+  const save = async () => {
     try {
       const row = await form.validateFields();
       onSendForm({ ...row, id: editingKey });
-      dispatch(setEditKeyValue(""));
+      setEditingKey("");
     } catch (errInfo) {
       console.log("Validate Failed:", errInfo);
     }

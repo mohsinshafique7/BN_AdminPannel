@@ -42,6 +42,7 @@ const CreateProductGroup = (props) => {
   } = props;
 
   const [isCreateProduct, setIsCreateProduct] = useState(true);
+
   const [queryParams, setQueryParams] = useState({
     name: "",
     color: "#ffffff",

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
-import { Popconfirm, Tooltip, Button, Pagination, Empty, Input, Popover } from "antd";
+import { Popconfirm, Tooltip, Button, Input, Popover } from "antd";
 import { HexColorPicker } from "react-colorful";
 import Search from "../Search/Search";
 import {
@@ -23,8 +23,7 @@ import CoreForm from "../ModalFrom/CoreForm";
 import Loader from "../Loader/Loader";
 
 import { STATE_STATUSES } from "../../utils/app";
-import { DeleteOutlined, EditOutlined, CloseOutlined, CheckOutlined } from "@ant-design/icons";
-import { backgroundMainTable } from "utils/colors";
+import { EditOutlined, CloseOutlined, CheckOutlined } from "@ant-design/icons";
 import ProductGroupCoreProduct from "components/Tables/ProductGroupCoreProduct";
 
 const ProductGroupsDesc = ({
@@ -46,7 +45,7 @@ const ProductGroupsDesc = ({
       status: state.productGroups.status,
     };
   });
-  console.log(productGroup);
+
   const { name, id, coreProduct, user, company, color } = productGroup;
   const inputData = [{ label: "Name", name: "name", type: "text", required: true }];
 

@@ -5,6 +5,8 @@ import { FilterFilled } from "@ant-design/icons";
 import _ from "lodash";
 import moment from "moment";
 import styled from "styled-components";
+import { brandsEditInputs, setColor, getFilter, renderTableData } from "../../utils/FormInputs";
+import CoreForm from "components/ModalFrom/CoreForm";
 export const Styles = styled.div`
   margin-top: 15px;
 
@@ -14,12 +16,14 @@ export const Styles = styled.div`
     margin-top: 25px;
   }
 `;
-const BrandsTable = ({ data, page, perPage, setPage, setPerPage }) => {
+const BrandsTable = ({ data, page, perPage, setPage, setPerPage, onFinishEdit }) => {
+  const formInputs = brandsEditInputs();
   const dataSource = data.map((item) => {
     return {
       key: item.id,
       name: item.name,
       parentBrand: item?.parent?.name,
+      parentBrandId: item?.parent?.id,
       manufacturer: item?.manufacture?.name,
       manufacturerId: item?.manufacture?.id,
       color: item.color,
@@ -27,32 +31,49 @@ const BrandsTable = ({ data, page, perPage, setPage, setPerPage }) => {
       dateCreated: item.createdAt,
     };
   });
-  const limit = page * perPage + perPage < dataSource.length ? page * perPage + perPage : dataSource.length;
 
-  const renderData = dataSource.slice(page * perPage, limit);
+  const renderData = renderTableData(page, perPage, dataSource);
 
-  const brandFilters = _.uniq(_.map(renderData, "name")).map((item) => {
-    return { text: item, value: item };
-  });
+  const brandFilters = getFilter(renderData, "name");
 
-  const manufacturerFilters = _.uniq(_.map(renderData, "manufacturer")).map((item) => {
-    return { text: item, value: item };
-  });
+  const manufacturerFilters = getFilter(renderData, "manufacturer");
+
   const onChangePage = (page, pageSize) => {
     setPage(page - 1);
   };
-  const setColor = (color) => {
-    return { backgroundColor: color, padding: "10px", border: "1px solid green" };
-  };
+
   const onChangeSize = (page, pageSize) => {
     setPerPage(pageSize);
   };
+
   const columns = [
+    {
+      title: "Edit",
+      dataIndex: "editUser",
+      key: "editUser",
+      width: "5%",
+      render: (_, record) => (
+        <CoreForm
+          title={"Edit"}
+          initialValue={{
+            name: record.name,
+            brandId: record.parentBrandId,
+            color: record.color,
+            manufacturerId: record.manufacturerId,
+            id: record.key,
+          }}
+          selectData={formInputs.selectData}
+          inputData={formInputs.inputData}
+          brandSelect={true}
+          onSendForm={onFinishEdit}
+        />
+      ),
+    },
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
-      width: "30%",
+      width: "15%",
       render: (text, record) => (
         <Link to={`/brand/${record.key}/brand/page=0&perPage=10`}>{record.parentBrand ? `${record.parentBrand} / ${text}` : text}</Link>
       ),
@@ -95,14 +116,14 @@ const BrandsTable = ({ data, page, perPage, setPage, setPerPage }) => {
       title: "Color",
       dataIndex: "color",
       key: "color",
-      width: "10%",
+      width: "20%",
       render: (text, record) => <span style={setColor(text)}></span>,
     },
     {
       title: "Product Count",
       dataIndex: "productCount",
       key: "productCount",
-      width: "10%",
+      width: "20%",
     },
     {
       title: "Date Created",

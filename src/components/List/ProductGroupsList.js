@@ -4,10 +4,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { withRouter } from "react-router-dom";
 import qs from "query-string";
 import { getProductGroups } from "../../store/productGroups/action";
+import { getCompanies } from "../../store/companies/action";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
 import { STATE_STATUSES } from "../../utils/app";
 import ProductGroupTable from "components/Tables/ProductGroupTable";
+import { editProductGroup } from "../../store/productGroups/action";
 
 const ProductGroupsList = (props) => {
   const {
@@ -30,6 +32,7 @@ const ProductGroupsList = (props) => {
   }, [queryParams, history]);
 
   useEffect(() => {
+    dispatch(getCompanies());
     dispatch(getProductGroups());
   }, [dispatch]);
 
@@ -62,7 +65,12 @@ const ProductGroupsList = (props) => {
         item?.company?.name.match(search)
     );
   }, [searchValue, productGroups]);
-
+  function handleProductGroupEdit(values) {
+    const { name, id, userId, companyId } = values;
+    dispatch(editProductGroup({ name, userId, companyId }, id)).then(() => {
+      dispatch(getProductGroups());
+    });
+  }
   return (
     <>
       <div className="item-title">Product Groups</div>
@@ -77,6 +85,7 @@ const ProductGroupsList = (props) => {
           perPage={Number(queryParams.perPage)}
           setPage={setPage}
           setPerPage={setPerPage}
+          handleProductGroupEdit={handleProductGroupEdit}
         />
       ) : (
         <Loader />
