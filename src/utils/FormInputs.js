@@ -133,6 +133,47 @@ export const CompanyEditInput = () => {
     selectDate: [{ label: "Start Date", name: "filtersStartDate" }],
   };
 };
+export const CoreProductEditInput = () => {
+  return {
+    selectData: [
+      {
+        name: "brandId",
+        value: "id",
+        option: "name",
+        action: getBrands,
+        store: "brands",
+        lable: "Change brand",
+        required: false,
+        mode: false,
+      },
+      {
+        name: "categoryId",
+        value: "id",
+        option: "name",
+        action: getCategories,
+        store: "categories",
+        lable: "Change category",
+        required: false,
+        mode: false,
+      },
+    ],
+    inputData: [
+      { label: "Title", name: "title", type: "text", required: false },
+      { label: "Size", name: "size", type: "number", required: false },
+      { label: "Id", name: "id", type: "number", required: false, display: false },
+    ],
+    areaData: [
+      { label: "Description", name: "description", required: false },
+      { label: "Ingredients", name: "ingredients", required: false },
+      { label: "Features", name: "features", required: false },
+    ],
+    switchData: [
+      { label: "Bundled", name: "bundled", default: true, required: false },
+      { label: "SecondaryImages", name: "secondaryImages", default: true, required: false },
+      { label: "Reviewed", name: "reviewed", default: true, required: false },
+    ],
+  };
+};
 
 export const renderTableData = (page, perPage, dataSource) => {
   const limit = page * perPage + perPage < dataSource.length ? page * perPage + perPage : dataSource.length;

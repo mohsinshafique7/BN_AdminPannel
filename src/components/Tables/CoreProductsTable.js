@@ -1,14 +1,12 @@
-import React, { useState } from "react";
-import { Table, Pagination, Switch, Typography, Popconfirm, Form } from "antd";
+import React from "react";
+import { Table, Pagination, Switch } from "antd";
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
 import { FilterFilled } from "@ant-design/icons";
 import _ from "lodash";
 import moment from "moment";
 import styled from "styled-components";
-import Selector from "components/FormItems/Selector";
-import NumberInput from "components/FormItems/NumberInput";
-import TextInput from "components/FormItems/TextInput";
+import CoreForm from "components/ModalFrom/CoreForm";
+import { CoreProductEditInput } from "../../utils/FormInputs";
 export const Styles = styled.div`
   margin-top: 15px;
 
@@ -18,16 +16,8 @@ export const Styles = styled.div`
     margin-top: 25px;
   }
 `;
-const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, onSendForm }) => {
-  console.log(data);
-  const [form] = Form.useForm();
-  const [editingKey, setEditingKey] = useState("");
-  const { categories, brands } = useSelector((state) => {
-    return {
-      brands: state.manufacturersBrands.brands,
-      categories: state.categories.categories,
-    };
-  });
+const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, handleCoreProductEdit, setCoreImage }) => {
+  const formInputs = CoreProductEditInput();
   const dataSource = data.map((item) => {
     return {
       key: item.id,
@@ -40,6 +30,13 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, on
       brandId: item?.productBrand?.id,
       invalidEan: item.eanIssues,
       dateCreated: item.createdAt,
+      secondaryImages: item.secondaryImages,
+      description: item.description,
+      features: item.features,
+      ingredients: item.ingredients,
+      bundled: item.bundled,
+      productOptions: item.productOptions,
+      reviewed: item.reviewed,
     };
   });
 
@@ -50,31 +47,42 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, on
   const categoryFilters = _.uniq(_.map(dataSource, "category")).map((item) => {
     return { text: item, value: item };
   });
-  const cancel = () => {
-    setEditingKey("");
-  };
-  const isEditing = (record) => record.key === editingKey;
-  const edit = (record) => {
-    form.setFieldsValue({
-      id: record.key,
-      name: record.name,
-      size: record.size,
-      brand: record.brandId,
-      category: record.categoryId,
-    });
-    setEditingKey(record.key);
-  };
 
-  const save = async () => {
-    try {
-      const row = await form.validateFields();
-      onSendForm({ ...row, id: editingKey });
-      setEditingKey("");
-    } catch (errInfo) {
-      console.log("Validate Failed:", errInfo);
-    }
-  };
   const columns = [
+    {
+      title: "Edit",
+      dataIndex: "editUser",
+      key: "editUser",
+      width: "5%",
+      render: (_, record) => (
+        <CoreForm
+          title={"Edit Core Product"}
+          // className={"core-product"}
+          initialValue={{
+            id: record.key,
+            title: record.name,
+            image: record.image,
+            secondaryImages: record.secondaryImages,
+            description: record.description,
+            features: record.features,
+            ingredients: record.ingredients,
+            bundled: record.bundled,
+            brandId: record.brandId,
+            categoryId: record.categoryId,
+            size: record.size,
+            productOptions: record.productOptions,
+            reviewed: record.reviewed,
+          }}
+          selectData={formInputs.selectData}
+          inputData={formInputs.inputData}
+          areaData={formInputs.areaData}
+          switchData={formInputs.switchData}
+          uploadData={true}
+          handleSetImage={setCoreImage}
+          onSendForm={handleCoreProductEdit}
+        />
+      ),
+    },
     {
       title: "Image",
       dataIndex: "image",
@@ -87,7 +95,6 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, on
       dataIndex: "name",
       key: "name",
       width: "35%",
-      editable: true,
       render: (text, record) => (
         <Link style={{ fontSize: "1.2rem" }} to={`/core-product/${record.key}`}>
           {text}
@@ -112,14 +119,12 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, on
       dataIndex: "size",
       key: "size",
       width: "10%",
-      editable: true,
     },
     {
       title: "Category",
       dataIndex: "category",
       key: "category",
       width: "15%",
-      editable: true,
       filterSearch: true,
       sorter: (a, b) => {
         if (a.category < b.category) {
@@ -139,7 +144,6 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, on
       dataIndex: "brand",
       key: "brand",
       width: "15%",
-      editable: true,
     },
     {
       title: "Invalid EAN",
@@ -156,82 +160,11 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, on
       render: (text) => moment(text).format("YYYY-MM-DD"),
       filterIcon: (filtered) => <FilterFilled style={{ color: filtered ? "#1890ff" : undefined }} />,
     },
-    {
-      title: "Operation",
-      dataIndex: "operation",
-      width: "10%",
-      render: (_, record) => {
-        const editable = isEditing(record);
-        return editable ? (
-          <span>
-            <Typography.Link
-              onClick={() => save(record.key)}
-              style={{
-                marginRight: 8,
-              }}
-            >
-              Save
-            </Typography.Link>
-            <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
-              <Typography.Link>Cancel</Typography.Link>
-            </Popconfirm>
-          </span>
-        ) : (
-          <Typography.Link disabled={editingKey !== ""} onClick={() => edit(record)}>
-            Edit
-          </Typography.Link>
-        );
-      },
-    },
   ];
 
-  const EditableCell = ({ editing, dataIndex, title, inputType, record, index, children, ...restProps }) => {
-    const inputNode =
-      inputType === "size" ? (
-        <NumberInput name={dataIndex} />
-      ) : inputType === "brand" ? (
-        <Selector selector={brands} sort="name" title="name" value="id" name={dataIndex} />
-      ) : inputType === "category" ? (
-        <Selector selector={categories} sort="name" title="name" value="id" name={dataIndex} />
-      ) : (
-        <TextInput name={dataIndex} />
-      );
-
-    return <td {...restProps}>{editing ? <>{inputNode}</> : children}</td>;
-  };
-
-  const mergedColumns = columns.map((col) => {
-    if (!col.editable) {
-      return col;
-    }
-
-    return {
-      ...col,
-      onCell: (record) => ({
-        record,
-        inputType:
-          col.dataIndex === "size" ? "size" : col.dataIndex === "brand" ? "brand" : col.dataIndex === "category" ? "category" : "text",
-        dataIndex: col.dataIndex,
-        title: col.title,
-        editing: isEditing(record),
-      }),
-    };
-  });
   return (
     <Styles>
-      <Form form={form} component={false}>
-        <Table
-          components={{
-            body: {
-              cell: EditableCell,
-            },
-          }}
-          dataSource={dataSource}
-          columns={mergedColumns}
-          rowClassName="editable-row"
-          pagination={false}
-        />
-      </Form>
+      <Table dataSource={dataSource} columns={columns} rowClassName="editable-row" pagination={false} />
 
       <Pagination
         className="pagination-controls"

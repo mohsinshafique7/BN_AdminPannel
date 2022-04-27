@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Button, Modal, Form, Input, DatePicker } from "antd";
 import SelectBox from "./SelectBox";
 import UploadImg from "./UploadImg";
@@ -17,17 +17,25 @@ const CoreForm = (props) => {
   //   if (initialValue) {
   //     form.setFieldsValue(initialValue);
   //   }
-  // }, [initialValue, form]);
+  // }, []);
 
-  const onFinish = (values) => {
-    props.onSendForm(values);
-    setVisible(false);
-    formRef.current.resetFields();
-  };
+  const switchData =
+    props.switchData &&
+    props.switchData.length &&
+    props.switchData.map((item) => {
+      const value = initialValue[item.name];
+      return { ...item, default: value };
+    });
 
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-  };
+  // const onFinish = (values) => {
+  //   props.onSendForm(values);
+  //   setVisible(false);
+  //   formRef.current.resetFields();
+  // };
+
+  // const onFinishFailed = (errorInfo) => {
+  //   console.log("Failed:", errorInfo);
+  // };
 
   return (
     <div>
@@ -129,11 +137,7 @@ const CoreForm = (props) => {
                 />
               ))
             : null}
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            {props.switchData && props.switchData.length
-              ? props.switchData.map((item, index) => <SwitchBox item={item} key={index} />)
-              : null}
-          </div>
+          <div>{switchData && switchData.length ? switchData.map((item, index) => <SwitchBox item={item} key={index} />) : null}</div>
 
           {props.selectDate && props.selectDate.length
             ? props.selectDate.map((item, index) => (

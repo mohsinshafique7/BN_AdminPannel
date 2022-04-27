@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import moment from "moment";
 import qs from "query-string";
-import { getCoreProducts, editCoreProduct, mergeCoreProduct } from "../../store/coreProducts/action";
+import { getCoreProducts, editCoreProduct } from "../../store/coreProducts/action";
 import Loader from "../Loader/Loader";
 import { Input, DatePicker, Switch, Radio, Checkbox } from "antd";
 import { withRouter } from "react-router-dom";
@@ -10,7 +10,6 @@ import { CoreListStyles } from "./style";
 import { STATE_STATUSES } from "../../utils/app";
 import Multiselect from "../ModalFrom/Multiselect";
 import { useDispatch, useSelector } from "react-redux";
-import { getProductGroups } from "../../store/productGroups/action";
 import { getCategories } from "../../store/categories/action";
 import { getBrands } from "../../store/manufacturersBrands/action";
 import { getManufacturers } from "../../store/manufacturersBrands/action";
@@ -24,7 +23,7 @@ const CoreProductsList = (props) => {
     history,
     pathParam,
   } = props;
-  const isMerge = false;
+  // const isMerge = false;
   const { rows, count, status } = useSelector((state) => {
     return {
       rows: state.coreProducts.coreProducts.rows,
@@ -75,16 +74,16 @@ const CoreProductsList = (props) => {
       placeholder: "Category",
       initialValue: queryParams.category,
     },
-    {
-      name: "productGroup",
-      value: "id",
-      option: "name",
-      action: getProductGroups,
-      store: "productGroups",
-      lable: "Product Group",
-      placeholder: "Product Group",
-      initialValue: queryParams.productGroup,
-    },
+    // {
+    //   name: "productGroup",
+    //   value: "id",
+    //   option: "name",
+    //   action: getProductGroups,
+    //   store: "productGroups",
+    //   lable: "Product Group",
+    //   placeholder: "Product Group",
+    //   initialValue: queryParams.productGroup,
+    // },
     {
       name: "manufacturer",
       value: "id",
@@ -100,8 +99,8 @@ const CoreProductsList = (props) => {
   useEffect(() => {
     const queryString = qs.stringify(queryParams);
     history.replace(`/${pathParam}/${queryString}`);
-  }, [queryParams, history]);
-
+  }, [queryParams, history, pathParam]);
+  //Path param Added Later
   useEffect(() => {
     if (queryParams.createdStart) {
       setDateInterval([moment(queryParams.createdStart), moment(queryParams.createdEnd)]);
@@ -115,7 +114,7 @@ const CoreProductsList = (props) => {
     dispatch(getManufacturers());
     dispatch(getBrands());
     dispatch(getCategories());
-    dispatch(getProductGroups());
+    // dispatch(getProductGroups());
     dispatch(getCoreProducts(queryParams));
   }, [dispatch, queryParams]);
   //queryParams was dependency
@@ -247,11 +246,12 @@ const CoreProductsList = (props) => {
   // };
 
   const onSendForm = (values) => {
-    const data = { categoryId: values.category, brandId: values.brand, size: values.size, title: values.name };
+    const id = values.id;
+    delete values["id"];
     if (coreImage.length) {
-      Object.assign(data, { image: coreImage });
+      Object.assign(values, { image: coreImage });
     }
-    dispatch(editCoreProduct("EDIT_CORE_PRODUCT_LIST", values.id, data)).then(() => {
+    dispatch(editCoreProduct("EDIT_CORE_PRODUCT_LIST", id, values)).then(() => {
       setCoreImage("");
       dispatch(getCoreProducts(queryParams));
     });
@@ -343,6 +343,8 @@ const CoreProductsList = (props) => {
               setPage={onChangePage}
               setPerPage={onChangePerPage}
               onSendForm={onSendForm}
+              handleCoreProductEdit={onSendForm}
+              setCoreImage={setCoreImage}
             />
           </div>
         </>
