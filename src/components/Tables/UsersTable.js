@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Table, Pagination } from "antd";
 import { Link } from "react-router-dom";
 import { FilterFilled } from "@ant-design/icons";
@@ -7,6 +7,7 @@ import moment from "moment";
 import styled from "styled-components";
 import CoreForm from "components/ModalFrom/CoreForm";
 import { usersEditInputs, renderTableData, getFilter } from "../../utils/FormInputs";
+import { useGetAllCompanies } from "../../Requests/CompanyRequest";
 export const Styles = styled.div`
   margin-top: 15px;
 
@@ -17,7 +18,13 @@ export const Styles = styled.div`
   }
 `;
 const UsersTable = ({ data, page, perPage, setPage, setPerPage, handleEditUser }) => {
-  const formInputs = usersEditInputs();
+  const { isLoading: companiesIsLoading, data: companiesData } = useGetAllCompanies();
+  const [formInputs, setFormInputs] = useState(null);
+  useEffect(() => {
+    if (!companiesIsLoading) {
+      setFormInputs(usersEditInputs(companiesData?.companies));
+    }
+  }, [companiesIsLoading, companiesData]);
 
   const dataSource = data.map((item) => {
     return {
@@ -52,24 +59,25 @@ const UsersTable = ({ data, page, perPage, setPage, setPerPage, handleEditUser }
       dataIndex: "editUser",
       key: "editUser",
       width: "5%",
-      render: (text, record) => (
-        <CoreForm
-          title={"Edit"}
-          initialValue={{
-            first_name: record.first_name,
-            last_name: record.last_name,
-            email: record.email,
-            companyId: record.companyId,
-            is_stuff: record.is_stuff,
-            status: record.status,
-            id: record.key,
-          }}
-          selectData={formInputs.selectData}
-          inputData={formInputs.inputData}
-          switchData={formInputs.switchData}
-          onSendForm={handleEditUser}
-        />
-      ),
+      render: (text, record) =>
+        formInputs ? (
+          <CoreForm
+            title={"Edit"}
+            initialValue={{
+              first_name: record.first_name,
+              last_name: record.last_name,
+              email: record.email,
+              companyId: record.companyId,
+              is_stuff: record.is_stuff,
+              status: record.status,
+              id: record.key,
+            }}
+            selectData={formInputs.selectData}
+            inputData={formInputs.inputData}
+            switchData={formInputs.switchData}
+            onSendForm={handleEditUser}
+          />
+        ) : null,
     },
     {
       title: "Name",

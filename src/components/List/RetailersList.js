@@ -1,33 +1,28 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { withRouter } from "react-router-dom";
 import qs from "query-string";
-import { editRetailer } from "../../store/retailers/action";
-import { getRetailers, createRetailer } from "../../store/retailers/action";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
 import CoreForm from "../ModalFrom/CoreForm";
-import { STATE_STATUSES } from "../../utils/app";
 import { notification } from "antd";
 import RetailerTable from "components/Tables/RetailerTable";
-
+import { retailerCreateInput } from "../../utils/FormInputs";
+import { useGetAllRetailers, useCreateRetailer, useUpdateRetailer } from "../../Requests/RetailerRequest";
 const RetailersList = (props) => {
   const {
     match: { params },
     history,
   } = props;
-  const { retailers, status, searchValue } = useSelector((state) => {
+  const { isLoading: retailersIsLoading, data: retailersData } = useGetAllRetailers();
+  const { mutate: createRetailer, isError: createRetailerIsError } = useCreateRetailer();
+  const { mutate: updateRetailer, isError: updateRetailerIsError } = useUpdateRetailer();
+  const formInputs = retailerCreateInput();
+  const { searchValue } = useSelector((state) => {
     return {
-      retailers: state.retailers.retailers,
-      status: state.retailers.status,
       searchValue: state.filters.searchValue,
     };
   });
-  const dispatch = useDispatch();
-  const inputData = [
-    { label: "Name", name: "name", type: "text", required: true },
-    { label: "Colour", name: "color", type: "text", required: true },
-  ];
 
   const [queryParams, setQueryParams] = useState(qs.parse(params.param));
 
@@ -36,18 +31,14 @@ const RetailersList = (props) => {
     history.replace(`/retailers/${queryString}`);
   }, [queryParams, history]);
 
-  useEffect(() => {
-    dispatch(getRetailers());
-  }, [dispatch]);
-
   const onSendForm = (values) => {
-    dispatch(createRetailer(values)).catch(() => openNotification("error"));
+    createRetailer(values);
   };
 
   const searchedData = useMemo(() => {
     const search = new RegExp(searchValue, "gi");
-    return retailers.filter((item) => item.name.match(search));
-  }, [searchValue, retailers]);
+    return retailersData?.retailers.filter((item) => item.name.match(search));
+  }, [searchValue, retailersData]);
 
   const openNotification = (type) => {
     notification[type]({
@@ -66,9 +57,7 @@ const RetailersList = (props) => {
   };
   function handleEditRetailer(values) {
     const { color, id } = values;
-    dispatch(editRetailer({ color }, id)).then(() => {
-      dispatch(getRetailers());
-    });
+    updateRetailer({ color, id });
   }
   const setPerPage = (perPage) => {
     setQueryParams((queryParams) => {
@@ -83,8 +72,8 @@ const RetailersList = (props) => {
     <>
       <div className="item-title">Retailers</div>
       <Search />
-      <CoreForm title={"Create Retailer"} inputData={inputData} onSendForm={onSendForm} />
-      {status !== STATE_STATUSES.PENDING ? (
+      <CoreForm title={"Create Retailer"} inputData={formInputs.inputData} onSendForm={onSendForm} />
+      {!retailersIsLoading ? (
         <div>
           <RetailerTable
             data={searchedData}

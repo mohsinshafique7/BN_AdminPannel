@@ -1,18 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Select, Form } from "antd";
-import { connect } from "react-redux";
 
 const SelectBox = (props) => {
   const { Option } = Select;
 
-  const { action, required } = props;
-
-  useEffect(() => {
-    if (action) {
-      action();
-    }
-  }, [action]);
-
+  const { required } = props;
   return (
     <div className="select-wrapper">
       <Form.Item label={props.lable} name={props.name} rules={[{ required: required, message: `Please select item!` }]}>
@@ -27,9 +19,9 @@ const SelectBox = (props) => {
               No parent brand
             </Option>
           )}
-          {props[props.store] &&
-            props[props.store].length &&
-            props[props.store]
+          {props.store &&
+            props.store.length &&
+            props.store
               .sort((a, b) => {
                 if (a && b) {
                   if (a[props.option].toLowerCase() < b[props.option].toLowerCase()) {
@@ -68,23 +60,24 @@ const SelectBox = (props) => {
   );
 };
 
-export default connect(
-  (state) => ({
-    selectSourceCategories: state.sourceCategories.selectSourceCategories,
-    selectCoreProducts: state.coreProducts.selectCoreProducts,
-    coreProducts: state.coreProducts.coreProducts.rows,
-    categories: state.categories.categories,
-    manufacturers: state.manufacturersBrands.manufacturers,
-    sourceCategory: state.sourceCategories.sourceCategories,
-    companies: state.companies.companies,
-    users: state.users.users,
-    brands: state.manufacturersBrands.brands,
-    productGroups: state.productGroups.productGroups,
-    namesSourceCategories: state.sourceCategories.names,
-    categoryType: [{ name: "shelf" }, { name: "aisle" }, { name: "banners" }, { name: "search" }],
-    userStatus: [{ name: "active" }, { name: "inactive" }],
-    categotyScrapper: [{ name: "banners" }, { name: "products" }, { name: "taxonomy" }],
-    retailers: state.retailers.retailers,
-  }),
-  null
-)(SelectBox);
+export default // connect(
+//   (state) => ({
+//     selectSourceCategories: state.sourceCategories.selectSourceCategories,
+//     selectCoreProducts: state.coreProducts.selectCoreProducts,
+//     coreProducts: state.coreProducts.coreProducts.rows,
+//     categories: state.categories.categories,
+//     manufacturers: state.manufacturersBrands.manufacturers,
+//     sourceCategory: state.sourceCategories.sourceCategories,
+//     companies: state.companies.companies,
+//     users: state.users.users,
+//     brands: state.manufacturersBrands.brands,
+//     productGroups: state.productGroups.productGroups,
+//     namesSourceCategories: state.sourceCategories.names,
+//     categoryType: [{ name: "shelf" }, { name: "aisle" }, { name: "banners" }, { name: "search" }],
+//     userStatus: [{ name: "active" }, { name: "inactive" }],
+//     categotyScrapper: [{ name: "banners" }, { name: "products" }, { name: "taxonomy" }],
+//     retailers: state.retailers.retailers,
+//   }),
+//   null
+// )
+SelectBox;

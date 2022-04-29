@@ -18,7 +18,6 @@ const CoreForm = (props) => {
   //     form.setFieldsValue(initialValue);
   //   }
   // }, []);
-
   const switchData =
     props.switchData &&
     props.switchData.length &&
@@ -126,7 +125,6 @@ const CoreForm = (props) => {
                   key={index}
                   categorySelect={item.categorySelect}
                   brandSelect={item.brandSelect}
-                  action={item.action}
                   store={item.store}
                   name={item.name}
                   lable={item.lable}

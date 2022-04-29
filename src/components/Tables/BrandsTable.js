@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Table, Pagination } from "antd";
 import { Link } from "react-router-dom";
 import { FilterFilled } from "@ant-design/icons";
@@ -7,6 +7,8 @@ import moment from "moment";
 import styled from "styled-components";
 import { brandsEditInputs, setColor, getFilter, renderTableData } from "../../utils/FormInputs";
 import CoreForm from "components/ModalFrom/CoreForm";
+import { useGetAllManufacturers } from "../../Requests/ManufacturerRequest";
+import { useGetAllBrands } from "../../Requests/BrandRequest";
 export const Styles = styled.div`
   margin-top: 15px;
 
@@ -17,7 +19,15 @@ export const Styles = styled.div`
   }
 `;
 const BrandsTable = ({ data, page, perPage, setPage, setPerPage, onFinishEdit }) => {
-  const formInputs = brandsEditInputs();
+  const { isLoading: brandsIsLoading, data: brandsData } = useGetAllBrands();
+
+  const { isLoading: manufacturerIsLoading, data: manufacturerData } = useGetAllManufacturers();
+  const [formInputs, setFormInputs] = useState(null);
+  useEffect(() => {
+    if (!manufacturerIsLoading && !brandsIsLoading) {
+      setFormInputs(brandsEditInputs(manufacturerData?.manufacturers, brandsData?.brands));
+    }
+  }, [brandsIsLoading, brandsData, manufacturerData, manufacturerIsLoading]);
   const dataSource = data.map((item) => {
     return {
       key: item.id,
@@ -52,22 +62,23 @@ const BrandsTable = ({ data, page, perPage, setPage, setPerPage, onFinishEdit })
       dataIndex: "editUser",
       key: "editUser",
       width: "5%",
-      render: (_, record) => (
-        <CoreForm
-          title={"Edit"}
-          initialValue={{
-            name: record.name,
-            brandId: record.parentBrandId,
-            color: record.color,
-            manufacturerId: record.manufacturerId,
-            id: record.key,
-          }}
-          selectData={formInputs.selectData}
-          inputData={formInputs.inputData}
-          brandSelect={true}
-          onSendForm={onFinishEdit}
-        />
-      ),
+      render: (_, record) =>
+        formInputs ? (
+          <CoreForm
+            title={"Edit"}
+            initialValue={{
+              name: record.name,
+              brandId: record.parentBrandId,
+              color: record.color,
+              manufacturerId: record.manufacturerId,
+              id: record.key,
+            }}
+            selectData={formInputs.selectData}
+            inputData={formInputs.inputData}
+            brandSelect={true}
+            onSendForm={onFinishEdit}
+          />
+        ) : null,
     },
     {
       title: "Name",

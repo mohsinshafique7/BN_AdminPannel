@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Table, Pagination, Checkbox } from "antd";
 import { Link } from "react-router-dom";
 import { FilterFilled } from "@ant-design/icons";
@@ -6,6 +6,7 @@ import _ from "lodash";
 import moment from "moment";
 import styled from "styled-components";
 import CoreForm from "components/ModalFrom/CoreForm";
+import { useGetAllCategories } from "../../Requests/CategoryRequest";
 import { categoryEditInput, setColor, renderTableData, getFilter } from "../../utils/FormInputs";
 export const Styles = styled.div`
   margin-top: 15px;
@@ -17,7 +18,15 @@ export const Styles = styled.div`
   }
 `;
 const CategoryTable = ({ changeSubscription, data, page, perPage, setPage, setPerPage, handleCategoryEdit }) => {
-  const formInputs = categoryEditInput();
+  // const formInputs = categoryEditInput();
+  const { isLoading: categoriesIsLoading, data: categoriesData } = useGetAllCategories();
+  const [formInputs, setFormInputs] = useState(null);
+  useEffect(() => {
+    if (!categoriesIsLoading) {
+      setFormInputs(categoryEditInput(categoriesData.categories));
+    }
+  }, [categoriesIsLoading, categoriesData]);
+
   const dataSource = data.map((item) => {
     return {
       key: item.id,
@@ -48,25 +57,26 @@ const CategoryTable = ({ changeSubscription, data, page, perPage, setPage, setPe
       dataIndex: "editUser",
       key: "editUser",
       width: "5%",
-      render: (_, record) => (
-        <CoreForm
-          title={"Edits"}
-          // categorySelect={true}
-          initialValue={{
-            id: record.key,
-            name: record.name,
-            color: record.color,
-            categoryId: record.categoryId,
-            subscription: record.subscription,
-            pricePer: record.pricePer,
-            measurementUnit: record.measurementUnit,
-          }}
-          inputData={formInputs.inputData}
-          selectData={formInputs.selectData}
-          switchData={formInputs.switchData}
-          onSendForm={handleCategoryEdit}
-        />
-      ),
+      render: (_, record) =>
+        !categoriesIsLoading && formInputs ? (
+          <CoreForm
+            title={"Edits"}
+            // categorySelect={true}
+            initialValue={{
+              id: record.key,
+              name: record.name,
+              color: record.color,
+              categoryId: record.categoryId,
+              subscription: record.subscription,
+              pricePer: record.pricePer,
+              measurementUnit: record.measurementUnit,
+            }}
+            inputData={formInputs.inputData}
+            selectData={formInputs.selectData}
+            switchData={formInputs.switchData}
+            onSendForm={handleCategoryEdit}
+          />
+        ) : null,
     },
     {
       title: "Name",

@@ -6,7 +6,6 @@ import styled from "styled-components";
 import "antd/dist/antd.css";
 import icon from "../assets/images/logo.svg";
 import { requestLogIn } from "../store/auth/action";
-
 const Styles = styled.div`
   width: 100%;
   height: 100vh;

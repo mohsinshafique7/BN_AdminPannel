@@ -1,36 +1,36 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { withRouter } from "react-router-dom";
 import qs from "query-string";
-import { getManufacturers, createManufacturer, getBrands } from "../../store/manufacturersBrands/action";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
-import { STATE_STATUSES } from "../../utils/app";
 import CoreForm from "../ModalFrom/CoreForm";
 import { notification } from "antd";
 import ManufacturersTable from "components/Tables/ManufacturersTable";
-import { editManufacturer } from "../../store/manufacturersBrands/action";
-
+import { manufacturerCreateInputs } from "../../utils/FormInputs";
+import { useGetAllManufacturers, useCreateManufacturer, useUpdateManufacturer } from "../../Requests/ManufacturerRequest";
+import { useGetAllBrands } from "../../Requests/BrandRequest";
 const ManufacturersList = (props) => {
   const {
     match: { params },
     history,
   } = props;
-  const { manufacturers, status, searchValue } = useSelector((state) => {
+  const { isLoading: brandsIsLoading, data: brandsData } = useGetAllBrands();
+  const { isLoading: manufacturerIsLoading, data: manufacturerData } = useGetAllManufacturers();
+  const { mutate: createManufacturer, isError: createManufacturerIsError } = useCreateManufacturer();
+  const { mutate: updateManufacturer, isError: updateManufacturerIsError } = useUpdateManufacturer();
+
+  const [formInputs, setFormInputs] = useState(null);
+  useEffect(() => {
+    if (!brandsIsLoading) {
+      setFormInputs(manufacturerCreateInputs(brandsData?.brands));
+    }
+  }, [brandsIsLoading, brandsData]);
+  const { searchValue } = useSelector((state) => {
     return {
-      manufacturers: state.manufacturersBrands.manufacturers,
-      status: state.manufacturersBrands.status,
       searchValue: state.filters.searchValue,
     };
   });
-  const dispatch = useDispatch();
-  const inputData = [
-    { label: "Name", name: "name", type: "text", required: true },
-    { label: "Colour", name: "color", type: "text", required: true },
-  ];
-  const selectData = [
-    { name: "brands", value: "id", option: "name", action: getBrands, store: "brands", lable: "Brands", required: false, mode: "multiple" },
-  ];
 
   const [queryParams, setQueryParams] = useState(qs.parse(params.param));
 
@@ -39,14 +39,9 @@ const ManufacturersList = (props) => {
     history.replace(`/manufacturers/${queryString}`);
   }, [queryParams, history]);
 
-  useEffect(() => {
-    dispatch(getManufacturers());
-    dispatch(getBrands());
-  }, [dispatch]);
-
   const onSendForm = (values) => {
     const { name, brands, color } = values;
-    dispatch(createManufacturer({ manufacturer: { name, color }, brands })).catch(() => openNotification("error"));
+    createManufacturer({ manufacturer: { name, color }, brands });
   };
 
   const openNotification = (type) => {
@@ -58,8 +53,8 @@ const ManufacturersList = (props) => {
 
   const searchedData = useMemo(() => {
     const search = new RegExp(searchValue, "gi");
-    return manufacturers.filter((item) => item.name.match(search));
-  }, [searchValue, manufacturers]);
+    return manufacturerData?.manufacturers.filter((item) => item.name.match(search));
+  }, [searchValue, manufacturerData]);
 
   const setPage = (page) => {
     setQueryParams((queryParams) => {
@@ -80,26 +75,31 @@ const ManufacturersList = (props) => {
   };
   function handleEditManufacturer(values) {
     const { name, color, id } = values;
-    dispatch(editManufacturer({ manufacturer: { name, color } }, id)).then(() => {
-      dispatch(getManufacturers());
-    });
+    updateManufacturer({ manufacturer: { manufacturer: { name, color } }, id });
   }
   return (
     <>
       <div className="item-title">Manufacturers</div>
       <Search />
-      <CoreForm title={"Create  Manufacturer"} inputData={inputData} selectData={selectData} onSendForm={onSendForm} />
-      {status !== STATE_STATUSES.PENDING ? (
-        <div>
-          <ManufacturersTable
-            data={searchedData}
-            page={Number(queryParams.page)}
-            perPage={Number(queryParams.perPage)}
-            setPage={setPage}
-            setPerPage={setPerPage}
-            handleEditManufacturer={handleEditManufacturer}
+      {formInputs && !manufacturerIsLoading ? (
+        <>
+          <CoreForm
+            title={"Create  Manufacturer"}
+            inputData={formInputs?.inputData}
+            selectData={formInputs?.selectData}
+            onSendForm={onSendForm}
           />
-        </div>
+          <div>
+            <ManufacturersTable
+              data={searchedData}
+              page={Number(queryParams.page)}
+              perPage={Number(queryParams.perPage)}
+              setPage={setPage}
+              setPerPage={setPerPage}
+              handleEditManufacturer={handleEditManufacturer}
+            />
+          </div>
+        </>
       ) : (
         <Loader />
       )}

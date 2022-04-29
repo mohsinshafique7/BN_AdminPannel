@@ -1,7 +1,7 @@
 import React from "react";
 import { Layout, Button } from "antd";
 import styled from "styled-components";
-import { useDispatch, useSelector } from "react-redux";
+import { connect } from "react-redux";
 import { logOut } from "../../store/auth/action";
 import { Avatar } from "antd";
 import { UserOutlined } from "@ant-design/icons";
@@ -16,13 +16,7 @@ export const Styles = styled.div`
 
 const Header = (props) => {
   const { Header } = Layout;
-  const { user } = useSelector((state) => {
-    return {
-      user: state.users,
-    };
-  });
-  console.log(user);
-  const dispatch = useDispatch();
+
   return (
     <Styles>
       <Header className="site-layout-background">
@@ -35,4 +29,4 @@ const Header = (props) => {
   );
 };
 
-export default Header;
+export default connect(null, { logOut })(Header);

@@ -1,56 +1,36 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { withRouter } from "react-router-dom";
 import qs from "query-string";
-import { editBrand, getBrands, createBrandBrands, getManufacturers } from "../../store/manufacturersBrands/action";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
 import CoreForm from "../ModalFrom/CoreForm";
-import { STATE_STATUSES } from "../../utils/app";
 import { notification } from "antd";
 import BrandsTable from "components/Tables/BrandsTable";
-
+import { useGetAllManufacturers } from "../../Requests/ManufacturerRequest";
+import { useGetAllBrands, useCreateBrand, useUpdateBrand } from "../../Requests/BrandRequest";
+import { brandsCreateInputs } from "../../utils/FormInputs";
 const BrandsList = (props) => {
   const {
     match: { params },
     history,
   } = props;
-  const { brands, status, searchValue } = useSelector((state) => {
+  const { isLoading: brandsIsLoading, data: brandsData } = useGetAllBrands();
+  const { mutate: createBrand, isError: createBrandIsError } = useCreateBrand();
+  const { mutate: updateBrand, isError: updateBrandIsError } = useUpdateBrand();
+  const { isLoading: manufacturerIsLoading, data: manufacturerData } = useGetAllManufacturers();
+  const [formInputs, setFormInputs] = useState(null);
+
+  useEffect(() => {
+    if (!brandsIsLoading && !manufacturerIsLoading) {
+      setFormInputs(brandsCreateInputs(manufacturerData.manufacturers, brandsData.brands));
+    }
+  }, [brandsIsLoading, manufacturerIsLoading, brandsData, manufacturerData]);
+  const { searchValue } = useSelector((state) => {
     return {
-      brands: state.manufacturersBrands.brands,
-      status: state.manufacturersBrands.status,
       searchValue: state.filters.searchValue,
     };
   });
-  const dispatch = useDispatch();
-  const inputData = [
-    { label: "Name", name: "name", type: "text", required: true },
-    { label: "Colour", name: "color", type: "text", required: true },
-  ];
-
-  const selectData = [
-    {
-      name: "manufacturerId",
-      value: "id",
-      option: "name",
-      action: getManufacturers,
-      store: "manufacturers",
-      lable: "Select manufacturer",
-      required: false,
-      mode: false,
-    },
-    {
-      name: "brandId",
-      value: "id",
-      option: "name",
-      action: getBrands,
-      store: "brands",
-      lable: "Select brand",
-      required: false,
-      mode: false,
-      brandSelect: true,
-    },
-  ];
 
   const [queryParams, setQueryParams] = useState(qs.parse(params.param));
 
@@ -59,13 +39,8 @@ const BrandsList = (props) => {
     history.replace(`/brands/${queryString}`);
   }, [queryParams, history]);
 
-  useEffect(() => {
-    dispatch(getManufacturers());
-    dispatch(getBrands());
-  }, [dispatch]);
-
   const onSendForm = (values) => {
-    dispatch(createBrandBrands(values)).catch(() => openNotification("error"));
+    createBrand(values);
   };
 
   const openNotification = (type) => {
@@ -77,8 +52,10 @@ const BrandsList = (props) => {
 
   const searchedData = useMemo(() => {
     const search = new RegExp(searchValue, "gi");
-    return brands.filter((item) => item.name.match(search) || item?.parent?.name.match(search) || item?.manufacture?.name.match(search));
-  }, [searchValue, brands]);
+    return brandsData?.brands.filter(
+      (item) => item.name.match(search) || item?.parent?.name.match(search) || item?.manufacture?.name.match(search)
+    );
+  }, [searchValue, brandsData]);
   const setPage = (page) => {
     setQueryParams((queryParams) => {
       return {
@@ -97,25 +74,26 @@ const BrandsList = (props) => {
     });
   };
   function onFinishEdit(values) {
-    const { name, brandId, color, manufacturerId, id } = values;
-    dispatch(editBrand({ name, color, manufacturerId, brandId }, id)).then(() => {
-      dispatch(getBrands());
-    });
+    const id = values.id;
+    delete values["id"];
+    updateBrand({ id, values });
   }
   return (
     <>
       <div className="item-title">Brands</div>
       <Search />
-      <CoreForm title={"Create Brand"} inputData={inputData} selectData={selectData} onSendForm={onSendForm} />
-      {brands.length > 0 && status !== STATE_STATUSES.PENDING ? (
-        <BrandsTable
-          data={searchedData}
-          page={Number(queryParams.page)}
-          perPage={Number(queryParams.perPage)}
-          setPage={setPage}
-          setPerPage={setPerPage}
-          onFinishEdit={onFinishEdit}
-        />
+      {!brandsIsLoading && formInputs ? (
+        <>
+          <CoreForm title={"Create Brand"} inputData={formInputs.inputData} selectData={formInputs.selectData} onSendForm={onSendForm} />
+          <BrandsTable
+            data={searchedData}
+            page={Number(queryParams.page)}
+            perPage={Number(queryParams.perPage)}
+            setPage={setPage}
+            setPerPage={setPerPage}
+            onFinishEdit={onFinishEdit}
+          />
+        </>
       ) : (
         <Loader />
       )}

@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Table, Pagination } from "antd";
 import { Link } from "react-router-dom";
 import { FilterFilled } from "@ant-design/icons";
 import _ from "lodash";
 import styled from "styled-components";
 import CoreForm from "components/ModalFrom/CoreForm";
+import { useGetAllUsers } from "../../Requests/UsersRequest";
+import { useGetAllCompanies } from "../../Requests/CompanyRequest";
 import { CustomGroupEditInput, renderTableData, getFilter } from "../../utils/FormInputs";
 export const Styles = styled.div`
   margin-top: 15px;
@@ -16,7 +18,14 @@ export const Styles = styled.div`
   }
 `;
 const ProductGroupTable = ({ data, page, perPage, setPage, setPerPage, handleProductGroupEdit }) => {
-  const formInputs = CustomGroupEditInput();
+  const { isLoading: usersIsLoading, data: usersData } = useGetAllUsers();
+  const { isLoading: companiesIsLoading, data: companiesData } = useGetAllCompanies();
+  const [formInputs, setFormInputs] = useState(null);
+  useEffect(() => {
+    if (!usersIsLoading && !companiesIsLoading) {
+      setFormInputs(CustomGroupEditInput(usersData?.users, companiesData?.companies));
+    }
+  }, [usersIsLoading, usersData, companiesIsLoading, companiesData]);
   const dataSource = data.map((item) => {
     return {
       key: item.id,
@@ -47,20 +56,21 @@ const ProductGroupTable = ({ data, page, perPage, setPage, setPerPage, handlePro
       dataIndex: "editUser",
       key: "editUser",
       width: "5%",
-      render: (_, record) => (
-        <CoreForm
-          title={"Edit"}
-          initialValue={{
-            name: record.name,
-            userId: record.userId,
-            companyId: record.companyId,
-            id: record.key,
-          }}
-          inputData={formInputs.inputData}
-          selectData={formInputs.selectData}
-          onSendForm={handleProductGroupEdit}
-        />
-      ),
+      render: (_, record) =>
+        formInputs && !companiesIsLoading && !usersIsLoading ? (
+          <CoreForm
+            title={"Edit"}
+            initialValue={{
+              name: record.name,
+              userId: record.userId,
+              companyId: record.companyId,
+              id: record.key,
+            }}
+            inputData={formInputs.inputData}
+            selectData={formInputs.selectData}
+            onSendForm={handleProductGroupEdit}
+          />
+        ) : null,
     },
     {
       title: "Name",
@@ -122,15 +132,7 @@ const ProductGroupTable = ({ data, page, perPage, setPage, setPerPage, handlePro
 
   return (
     <Styles>
-      <Table
-        dataSource={renderData}
-        columns={columns}
-        pagination={false}
-        // expandable={{
-        //   expandedRowRender: (record) => <p style={{ backgroundColor: "" }}>{record.name}</p>,
-        //   rowExpandable: (record) => record.name !== "Not Expandable",
-        // }}
-      />
+      <Table dataSource={renderData} columns={columns} pagination={false} />
       <Pagination
         className="pagination-controls"
         total={dataSource.length}

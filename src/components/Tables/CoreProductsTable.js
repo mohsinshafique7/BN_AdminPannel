@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Table, Pagination, Switch } from "antd";
 import { Link } from "react-router-dom";
 import { FilterFilled } from "@ant-design/icons";
@@ -7,6 +7,9 @@ import moment from "moment";
 import styled from "styled-components";
 import CoreForm from "components/ModalFrom/CoreForm";
 import { CoreProductEditInput } from "../../utils/FormInputs";
+import { useGetAllCategories } from "../../Requests/CategoryRequest";
+import { useGetAllBrands } from "../../Requests/BrandRequest";
+
 export const Styles = styled.div`
   margin-top: 15px;
 
@@ -17,7 +20,15 @@ export const Styles = styled.div`
   }
 `;
 const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, handleCoreProductEdit, setCoreImage }) => {
-  const formInputs = CoreProductEditInput();
+  const { isLoading: categoriesIsLoading, data: categoriesData } = useGetAllCategories();
+  const { isLoading: brandsIsLoading, data: brandsData } = useGetAllBrands();
+
+  const [formInputs, setFormInputs] = useState(null);
+  useEffect(() => {
+    if (!categoriesIsLoading && !brandsIsLoading) {
+      setFormInputs(CoreProductEditInput(brandsData.brands, categoriesData?.categories));
+    }
+  }, [categoriesIsLoading, brandsIsLoading, categoriesData, brandsData]);
   const dataSource = data.map((item) => {
     return {
       key: item.id,
@@ -54,34 +65,35 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, ha
       dataIndex: "editUser",
       key: "editUser",
       width: "5%",
-      render: (_, record) => (
-        <CoreForm
-          title={"Edit Core Product"}
-          // className={"core-product"}
-          initialValue={{
-            id: record.key,
-            title: record.name,
-            image: record.image,
-            secondaryImages: record.secondaryImages,
-            description: record.description,
-            features: record.features,
-            ingredients: record.ingredients,
-            bundled: record.bundled,
-            brandId: record.brandId,
-            categoryId: record.categoryId,
-            size: record.size,
-            productOptions: record.productOptions,
-            reviewed: record.reviewed,
-          }}
-          selectData={formInputs.selectData}
-          inputData={formInputs.inputData}
-          areaData={formInputs.areaData}
-          switchData={formInputs.switchData}
-          uploadData={true}
-          handleSetImage={setCoreImage}
-          onSendForm={handleCoreProductEdit}
-        />
-      ),
+      render: (_, record) =>
+        formInputs && !categoriesIsLoading && !brandsIsLoading ? (
+          <CoreForm
+            title={"Edit"}
+            // className={"core-product"}
+            initialValue={{
+              id: record.key,
+              title: record.name,
+              image: record.image,
+              secondaryImages: record.secondaryImages,
+              description: record.description,
+              features: record.features,
+              ingredients: record.ingredients,
+              bundled: record.bundled,
+              brandId: record.brandId,
+              categoryId: record.categoryId,
+              size: record.size,
+              productOptions: record.productOptions,
+              reviewed: record.reviewed,
+            }}
+            selectData={formInputs.selectData}
+            inputData={formInputs.inputData}
+            areaData={formInputs.areaData}
+            switchData={formInputs.switchData}
+            uploadData={true}
+            handleSetImage={setCoreImage}
+            onSendForm={handleCoreProductEdit}
+          />
+        ) : null,
     },
     {
       title: "Image",

@@ -1,34 +1,29 @@
 import React, { useEffect, useState, useMemo } from "react";
 import moment from "moment";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { withRouter } from "react-router-dom";
 import qs from "query-string";
-import { getCompanies, createCompany } from "../../store/companies/action";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
 import CoreForm from "../ModalFrom/CoreForm";
-import { STATE_STATUSES } from "../../utils/app";
 import { notification } from "antd";
 import CompaniesTable from "components/Tables/CompaniesTable";
-import { editCompany } from "../../store/companies/action";
-
+import { CompanyCreateInput } from "../../utils/FormInputs";
+import { useGetAllCompanies, useCreateCompany, useUpdateCompany } from "../../Requests/CompanyRequest";
 const CompaniesList = (props) => {
   const {
     match: { params },
     history,
   } = props;
-
-  const { companies, status, searchValue } = useSelector((state) => {
+  const formInputs = CompanyCreateInput();
+  const { isLoading: companiesIsLoading, data: companiesData } = useGetAllCompanies();
+  const { mutate: createCompany, isError: createCompanyIsError } = useCreateCompany();
+  const { mutate: updateCompany, isError: updateCompanyIsError } = useUpdateCompany();
+  const { searchValue } = useSelector((state) => {
     return {
-      companies: state.companies.companies,
-      status: state.companies.status,
       searchValue: state.filters.searchValue,
     };
   });
-  const dispatch = useDispatch();
-
-  const inputData = [{ label: "Name", name: "name", type: "text", required: true }];
-  const selectDate = [{ label: "Start Date", name: "filtersStartDate" }];
 
   const [queryParams, setQueryParams] = useState(qs.parse(params.param));
 
@@ -37,15 +32,10 @@ const CompaniesList = (props) => {
     history.replace(`/companies/${queryString}`);
   }, [queryParams, history]);
 
-  useEffect(() => {
-    dispatch(getCompanies());
-  }, [dispatch]);
-
   const onSendForm = (values) => {
     const filtersStartDate = !!values.filtersStartDate ? values.filtersStartDate.format("YYYY-MM-DD") : moment().format("YYYY-MM-DD");
     values.filtersStartDate = filtersStartDate;
-
-    dispatch(createCompany(values)).catch(() => openNotification("error"));
+    createCompany(values);
   };
 
   const openNotification = (type) => {
@@ -57,8 +47,8 @@ const CompaniesList = (props) => {
 
   const searchedData = useMemo(() => {
     const search = new RegExp(searchValue, "gi");
-    return companies.filter((item) => item.name.match(search));
-  }, [searchValue, companies]);
+    return companiesData?.companies.filter((item) => item.name.match(search));
+  }, [searchValue, companiesData]);
 
   const setPage = (page) => {
     setQueryParams((queryParams) => {
@@ -80,16 +70,15 @@ const CompaniesList = (props) => {
   function handleEditCompany(values) {
     const filtersStartDate = values.filtersStartDate ? values.filtersStartDate.format("YYYY-MM-DD") : moment().format("YYYY-MM-DD");
     const { name, id } = values;
-    dispatch(editCompany({ name, filtersStartDate }, id)).then(() => {
-      dispatch(getCompanies());
-    });
+    const data = { name, filtersStartDate };
+    updateCompany({ id, data });
   }
   return (
     <>
       <div className="item-title">Companies</div>
       <Search />
-      <CoreForm title={"Create Company"} inputData={inputData} selectDate={selectDate} onSendForm={onSendForm} />
-      {status !== STATE_STATUSES.PENDING ? (
+      <CoreForm title={"Create Company"} inputData={formInputs.inputData} selectDate={formInputs.selectDate} onSendForm={onSendForm} />
+      {!companiesIsLoading ? (
         <div>
           <CompaniesTable
             data={searchedData}

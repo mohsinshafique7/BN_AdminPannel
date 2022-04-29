@@ -1,40 +1,31 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Button } from "antd";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { withRouter } from "react-router-dom";
 import qs from "query-string";
-import { getProductGroups } from "../../store/productGroups/action";
-import { getCompanies } from "../../store/companies/action";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
-import { STATE_STATUSES } from "../../utils/app";
 import ProductGroupTable from "components/Tables/ProductGroupTable";
-import { editProductGroup } from "../../store/productGroups/action";
-
+import { useGetAllCustomGroups, useUpdateCustomGroup } from "../../Requests/CustomGroupRequest";
 const ProductGroupsList = (props) => {
   const {
     match: { params },
     history,
   } = props;
-  const { productGroups, status, searchValue } = useSelector((state) => {
+  const { isLoading: customGroupsIsLoading, data: customGroupsData } = useGetAllCustomGroups();
+  const { mutate: updateCustomGroup, isError: updateCustomGroupIsError } = useUpdateCustomGroup();
+  const { searchValue } = useSelector((state) => {
     return {
-      productGroups: state.productGroups.productGroups,
-      status: state.productGroups.status,
       searchValue: state.filters.searchValue,
     };
   });
-  const dispatch = useDispatch();
+
   const [queryParams, setQueryParams] = useState(qs.parse(params.param));
 
   useEffect(() => {
     const queryString = qs.stringify(queryParams);
     history.replace(`/product-groups/${queryString}`);
   }, [queryParams, history]);
-
-  useEffect(() => {
-    dispatch(getCompanies());
-    dispatch(getProductGroups());
-  }, [dispatch]);
 
   const setPage = (page) => {
     setQueryParams((queryParams) => {
@@ -57,19 +48,18 @@ const ProductGroupsList = (props) => {
   const searchedData = useMemo(() => {
     const search = new RegExp(searchValue, "gi");
 
-    return productGroups.filter(
+    return customGroupsData?.productGroups.filter(
       (item) =>
         item.name.match(search) ||
         item?.user?.first_name.match(search) ||
         item?.user?.last_name.match(search) ||
         item?.company?.name.match(search)
     );
-  }, [searchValue, productGroups]);
+  }, [searchValue, customGroupsData]);
   function handleProductGroupEdit(values) {
     const { name, id, userId, companyId } = values;
-    dispatch(editProductGroup({ name, userId, companyId }, id)).then(() => {
-      dispatch(getProductGroups());
-    });
+    values = { name, userId, companyId };
+    updateCustomGroup({ id, values });
   }
   return (
     <>
@@ -78,7 +68,7 @@ const ProductGroupsList = (props) => {
       <Button type="primary" href={"/create-product-group/0"}>
         Create Product
       </Button>
-      {status !== STATE_STATUSES.PENDING ? (
+      {!customGroupsIsLoading ? (
         <ProductGroupTable
           data={searchedData}
           page={Number(queryParams.page)}

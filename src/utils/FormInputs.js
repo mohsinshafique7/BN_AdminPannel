@@ -1,9 +1,5 @@
-import { getCompanies } from "../store/companies/action";
-import { getManufacturers, getBrands } from "../store/manufacturersBrands/action";
-import { getCategories } from "../store/categories/action";
-import { getUsers } from "../store/users/action";
 import _ from "lodash";
-export const usersEditInputs = () => {
+export const usersEditInputs = (companiesData) => {
   return {
     inputData: [
       { label: "First Name", name: "first_name", type: "text", required: true },
@@ -16,13 +12,50 @@ export const usersEditInputs = () => {
         name: "companyId",
         value: "id",
         option: "name",
-        action: getCompanies,
-        store: "companies",
+        store: companiesData,
         lable: "Select company",
         required: true,
         mode: false,
       },
-      { name: "status", value: "name", option: "name", store: "userStatus", lable: "Change status", required: true, mode: false },
+      {
+        name: "status",
+        value: "name",
+        option: "name",
+        store: [{ name: "active" }, { name: "inactive" }],
+        lable: "Change status",
+        required: true,
+        mode: false,
+      },
+    ],
+    switchData: [{ label: "Admin", name: "is_stuff", default: "active", required: false }],
+  };
+};
+export const usersCreateInputs = (companiesData) => {
+  return {
+    inputData: [
+      { label: "First Name", name: "first_name", type: "text", required: true },
+      { label: "Last Name", name: "last_name", type: "text", required: true },
+      { label: "Email", name: "email", type: "email", required: true },
+    ],
+    selectData: [
+      {
+        name: "companyId",
+        value: "id",
+        option: "name",
+        store: companiesData,
+        lable: "Select company",
+        required: true,
+        mode: false,
+      },
+      {
+        name: "status",
+        value: "name",
+        option: "name",
+        store: [{ name: "active" }, { name: "inactive" }],
+        lable: "Change status",
+        required: true,
+        mode: false,
+      },
     ],
     switchData: [{ label: "Admin", name: "is_stuff", default: "active", required: false }],
   };
@@ -36,7 +69,26 @@ export const manufacturerEditInputs = () => {
     ],
   };
 };
-export const brandsEditInputs = () => {
+export const manufacturerCreateInputs = (brandsData) => {
+  return {
+    inputData: [
+      { label: "Name", name: "name", type: "text", required: true },
+      { label: "Colour", name: "color", type: "text", required: true },
+    ],
+    selectData: [
+      {
+        name: "brands",
+        value: "id",
+        option: "name",
+        store: brandsData,
+        lable: "Brands",
+        required: false,
+        mode: "multiple",
+      },
+    ],
+  };
+};
+export const brandsEditInputs = (manufacturerData, brandsData) => {
   return {
     inputData: [
       { label: "Name", name: "name", type: "text", required: true },
@@ -48,8 +100,7 @@ export const brandsEditInputs = () => {
         name: "manufacturerId",
         value: "id",
         option: "name",
-        action: getManufacturers,
-        store: "manufacturers",
+        store: manufacturerData,
         lable: "Change manufacturer",
         required: false,
         mode: false,
@@ -58,8 +109,36 @@ export const brandsEditInputs = () => {
         name: "brandId",
         value: "id",
         option: "name",
-        action: getBrands,
-        store: "brands",
+        store: brandsData,
+        lable: "Change brand",
+        required: false,
+        mode: false,
+        brandSelect: true,
+      },
+    ],
+  };
+};
+export const brandsCreateInputs = (manufacturerData, brandsData) => {
+  return {
+    inputData: [
+      { label: "Name", name: "name", type: "text", required: true },
+      { label: "Colour", name: "color", type: "text", required: true },
+    ],
+    selectData: [
+      {
+        name: "manufacturerId",
+        value: "id",
+        option: "name",
+        store: manufacturerData,
+        lable: "Change manufacturer",
+        required: false,
+        mode: false,
+      },
+      {
+        name: "brandId",
+        value: "id",
+        option: "name",
+        store: brandsData,
         lable: "Change brand",
         required: false,
         mode: false,
@@ -77,7 +156,15 @@ export const retailerEditInput = () => {
     ],
   };
 };
-export const categoryEditInput = () => {
+export const retailerCreateInput = () => {
+  return {
+    inputData: [
+      { label: "Name", name: "name", type: "text", required: true },
+      { label: "Colour", name: "color", type: "text", required: true },
+    ],
+  };
+};
+export const categoryEditInput = (categoriesData) => {
   return {
     inputData: [
       { label: "Name", name: "name", type: "text", required: true },
@@ -91,8 +178,7 @@ export const categoryEditInput = () => {
         name: "categoryId",
         value: "id",
         option: "name",
-        action: getCategories,
-        store: "categories",
+        store: categoriesData,
         lable: "Parent Category",
         required: false,
         mode: false,
@@ -102,7 +188,30 @@ export const categoryEditInput = () => {
     switchData: [{ label: "Subscription", name: "subscription", default: true, required: false }],
   };
 };
-export const CustomGroupEditInput = () => {
+export const categoryCreateInput = (categoriesData) => {
+  return {
+    inputData: [
+      { label: "Name", name: "name", type: "text", required: true },
+      { label: "Colour", name: "color", type: "text", required: true },
+      { label: "Price per", name: "pricePer", type: "text", required: false },
+      { label: "Measurement Unit", name: "measurementUnit", type: "text", required: false },
+    ],
+    selectData: [
+      {
+        name: "categoryId",
+        value: "id",
+        option: "name",
+        store: categoriesData,
+        lable: "Parent category",
+        required: false,
+        mode: false,
+        categorySelect: true,
+      },
+    ],
+    switchData: [{ label: "Subscription", name: "subscription", default: true, required: false }],
+  };
+};
+export const CustomGroupEditInput = (usersData, companiesData) => {
   return {
     inputData: [
       { label: "Name", name: "name", type: "text", required: true },
@@ -110,13 +219,12 @@ export const CustomGroupEditInput = () => {
     ],
 
     selectData: [
-      { name: "userId", value: "id", option: "email", action: getUsers, store: "users", lable: "User", required: false, mode: false },
+      { name: "userId", value: "id", option: "email", store: usersData, lable: "User", required: false, mode: false },
       {
         name: "companyId",
         value: "id",
         option: "name",
-        action: getCompanies,
-        store: "companies",
+        store: companiesData,
         lable: "Company",
         required: false,
         mode: false,
@@ -133,15 +241,20 @@ export const CompanyEditInput = () => {
     selectDate: [{ label: "Start Date", name: "filtersStartDate" }],
   };
 };
-export const CoreProductEditInput = () => {
+export const CompanyCreateInput = () => {
+  return {
+    inputData: [{ label: "Name", name: "name", type: "text", required: true }],
+    selectDate: [{ label: "Start Date", name: "filtersStartDate" }],
+  };
+};
+export const CoreProductEditInput = (brandsData, categoriesData) => {
   return {
     selectData: [
       {
         name: "brandId",
         value: "id",
         option: "name",
-        action: getBrands,
-        store: "brands",
+        store: brandsData,
         lable: "Change brand",
         required: false,
         mode: false,
@@ -150,8 +263,7 @@ export const CoreProductEditInput = () => {
         name: "categoryId",
         value: "id",
         option: "name",
-        action: getCategories,
-        store: "categories",
+        store: categoriesData,
         lable: "Change category",
         required: false,
         mode: false,

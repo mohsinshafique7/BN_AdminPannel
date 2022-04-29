@@ -1,68 +1,62 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { withRouter } from "react-router-dom";
 import qs from "query-string";
-import { getUsers, createUser, editUser } from "../../store/users/action";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
 import CoreForm from "../ModalFrom/CoreForm";
-import { getCompanies } from "../../store/companies/action";
-import { STATE_STATUSES } from "../../utils/app";
 import SelectBox from "../ModalFrom/Select";
 import { ClearOutlined } from "@ant-design/icons";
 import { notification } from "antd";
 import UsersTable from "components/Tables/UsersTable";
+import { useGetAllUsers, useCreateUsers, useUpdateUsers } from "../../Requests/UsersRequest";
+import { useGetAllCompanies } from "../../Requests/CompanyRequest";
+import { usersCreateInputs } from "../../utils/FormInputs";
 const UsersList = (props) => {
   const {
-    // getUsers,
-    // getCompanies,
-    // createUser,
-    // users,
-    // searchValue,
     match: { params },
     history,
   } = props;
-  const { users, status, searchValue } = useSelector((state) => {
+
+  const { isLoading: companiesIsLoading, data: companiesData } = useGetAllCompanies();
+  const { isLoading: usersIsLoading, data: usersData } = useGetAllUsers();
+  const { mutate: createUser, isError: createUserIsError } = useCreateUsers();
+  const { mutate: updateUser, isError: updateUserIsError } = useUpdateUsers();
+
+  const { searchValue } = useSelector((state) => {
     return {
-      users: state.users.users,
-      status: state.users.status,
       searchValue: state.filters.searchValue,
     };
   });
-  const [filterUserData, setFilterUserData] = useState([]);
-  const dispatch = useDispatch();
-
-  const inputData = [
-    { label: "First Name", name: "first_name", type: "text", required: true },
-    { label: "Last Name", name: "last_name", type: "text", required: true },
-    { label: "Email", name: "email", type: "email", required: true },
-  ];
-  const passwordData = [{ label: "Password", name: "password", type: "password", required: true }];
-
-  const selectData = [
-    {
-      name: "companyId",
-      value: "id",
-      option: "name",
-      action: getCompanies,
-      store: "companies",
-      lable: "Select company",
-      required: true,
-      mode: false,
-    },
-  ];
-
-  const switchData = [
-    { label: "Admin", name: "is_stuff", default: false, required: false },
-    { label: "Send Email", name: "sendEmail", default: false, required: false },
-  ];
-
   const [queryParams, setQueryParams] = useState(qs.parse(params.param));
-
   const [clearSelect, setClearSelect] = useState({});
+  const [selectData, setSelectData] = useState([]);
+  const [formInputs, setFormInputs] = useState(null);
+  useEffect(() => {
+    if (!companiesIsLoading) {
+      setFormInputs(usersCreateInputs(companiesData?.companies));
+    }
+  }, [companiesIsLoading, companiesData]);
 
-  const selectDataSearch = [{ param: "company", value: "name", option: "name", lable: "Company", initialValue: queryParams.company }];
-
+  useEffect(() => {
+    if (!companiesIsLoading) {
+      setSelectData([
+        {
+          param: "company",
+          initialValue: queryParams.company,
+          selectData: { selectValueSet },
+          placeholder: "Select Company",
+          actionParam: "company",
+          value: "name",
+          option: "name",
+          // initialId={item.initial}
+          lable: "Company",
+          store: companiesData?.companies,
+          clearSelect: { clearSelect },
+        },
+      ]);
+    }
+  }, [companiesIsLoading, companiesData, queryParams, clearSelect]);
   const initialValue = {
     is_stuff: false,
     sendEmail: false,
@@ -72,20 +66,6 @@ const UsersList = (props) => {
     const queryString = qs.stringify(queryParams);
     history.replace(`/users/${queryString}`);
   }, [queryParams, history]);
-
-  useEffect(() => {
-    let filterData = users;
-    if (queryParams["company"]) {
-      filterData = filterData.filter((item) => item?.company?.name === queryParams.company);
-    }
-    // Object.keys(queryParams).forEach((itemPatam) => {
-    //   if (queryParams[itemPatam] && itemPatam !== "page" && itemPatam !== "perPage") {
-    //     filterData = filterData.filter((item) => item.company.name === queryParams.company);
-    //   }
-    // });
-
-    setFilterUserData(filterData);
-  }, [queryParams, users]);
 
   const selectValueSet = (value) => {
     setQueryParams((queryParams) => Object.assign({}, queryParams, value));
@@ -104,15 +84,16 @@ const UsersList = (props) => {
 
   const searchedData = useMemo(() => {
     const search = new RegExp(searchValue, "gi");
-    return filterUserData.filter((item) => item.email.match(search) || item.first_name.match(search) || item.last_name.match(search));
-  }, [searchValue, filterUserData]);
-
-  useEffect(() => {
-    dispatch(getUsers());
-  }, [dispatch]);
+    return usersData?.users
+      .filter((item) => item.email.match(search) || item.first_name.match(search) || item.last_name.match(search))
+      .filter((item) => (queryParams["company"] ? item?.company?.name === queryParams.company : true));
+  }, [searchValue, usersData, queryParams]);
 
   const onSendForm = (values) => {
-    dispatch(createUser(values)).catch(() => openNotification("error"));
+    createUser(values);
+    if (createUserIsError) {
+      openNotification("error");
+    }
   };
 
   const openNotification = (type) => {
@@ -140,43 +121,46 @@ const UsersList = (props) => {
     });
   };
   const handleEditUser = (values) => {
-    const { first_name, last_name, companyId, email, is_staff, status, id } = values;
-    dispatch(editUser(id, { first_name, last_name, companyId, email, is_staff, status })).then(() => {
-      dispatch(getUsers());
-    });
+    const id = values.id;
+    delete values["id"];
+    updateUser({ id, values });
   };
   return (
     <>
       <div className="item-title">Users</div>
       <Search />
-      <CoreForm
-        title={"Create User"}
-        initialValue={initialValue}
-        selectData={selectData}
-        inputData={inputData}
-        passwordData={passwordData}
-        switchData={switchData}
-        onSendForm={onSendForm}
-      />
-      {status !== STATE_STATUSES.PENDING ? (
+
+      {!usersIsLoading && formInputs ? (
         <>
+          <CoreForm
+            title={"Create User"}
+            initialValue={initialValue}
+            selectData={formInputs.selectData}
+            inputData={formInputs.inputData}
+            passwordData={formInputs.passwordData}
+            switchData={formInputs.switchData}
+            onSendForm={onSendForm}
+          />
           <div className="wrapper-filter-categoty">
             <div className="title">Filter By:</div>
-            {selectDataSearch.map((item, index) => (
-              <div key={index} className="select-filter-categoty">
-                <SelectBox
-                  initialValue={item.initialValue}
-                  selectData={selectValueSet}
-                  actionParam={item.param}
-                  value={item.value}
-                  option={item.option}
-                  initialId={item.initial}
-                  lable={item.lable}
-                  clearSelect={clearSelect}
-                />
-                <ClearOutlined onClick={() => handleClearSelect(item.param)} />
-              </div>
-            ))}
+            {selectData.length > 0 &&
+              selectData.map((item, index) => (
+                <div key={index} className="select-filter-categoty">
+                  <SelectBox
+                    initialValue={item.initialValue}
+                    selectData={selectValueSet}
+                    placeholder={item.placeholder}
+                    actionParam={item.param}
+                    value={item.value}
+                    option={item.option}
+                    initialId={item.initial}
+                    lable={item.lable}
+                    store={item.store}
+                    clearSelect={clearSelect}
+                  />
+                  <ClearOutlined onClick={() => handleClearSelect(item.param)} />
+                </div>
+              ))}
           </div>
           <UsersTable
             data={searchedData}
