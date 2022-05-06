@@ -29,9 +29,4 @@ const UserTabs = ({ user, history }) => {
   );
 };
 
-export default connect(
-  (state) => ({
-    user: state.users.user,
-  }),
-  null
-)(withRouter(UserTabs));
+export default withRouter(UserTabs);

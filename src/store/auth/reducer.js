@@ -8,6 +8,7 @@ const initialState = {
   token: localStorage.getItem("Token") || "",
   refreshToken: localStorage.getItem("RefreshToken") || "",
   error: null,
+  user: null,
   status: STATE_STATUSES.INIT,
 };
 
@@ -31,12 +32,12 @@ export default (state = initialState, action) => {
     }
 
     case success(LOG_IN): {
-      const { token, refreshToken } = action.data;
-
+      const { token, refreshToken, user } = action.data;
       return {
         ...state,
         token,
         refreshToken,
+        user,
       };
     }
 

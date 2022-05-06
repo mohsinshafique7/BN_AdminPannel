@@ -1,52 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { connect } from "react-redux";
-import { getCoreProduct, editCoreProduct } from "../../store/coreProducts/action";
 import { withRouter } from "react-router-dom";
 import { CoreProductDescStyles } from "./style";
-import { Switch, Modal, Checkbox, Input, Button, notification } from "antd";
+import { Switch, Modal, Checkbox, Input, Button } from "antd";
 import Loader from "../Loader/Loader";
-import { STATE_STATUSES } from "../../utils/app";
 import CoreForm from "../ModalFrom/CoreForm";
 
-import { manuallyReplaceProductCore } from "../../store/suggestions/action";
-
-import { getProductGroups } from "../../store/productGroups/action";
-import { getCategories } from "../../store/categories/action";
-import { getBrands } from "../../store/manufacturersBrands/action";
-
+// import { manuallyReplaceProductCore } from "../../store/suggestions/action";
+import { useGetSingleCoreProduct, useMergeCoreProduct } from "../../Requests/CoreProductRequest";
+import { useGetAllBrands } from "../../Requests/BrandRequest";
+import { useGetAllCategories } from "../../Requests/CategoryRequest";
+import { useGetAllCustomGroups } from "../../Requests/CustomGroupRequest";
 const CoreProductDesc = (props) => {
   const {
-    getCoreProduct,
-    editCoreProduct,
-    coreProduct,
-    coreProduct: {
-      id,
-      title,
-      image,
-      ean,
-      description,
-      features,
-      ingredients,
-      reviewed,
-      bundled,
-      secondaryImages,
-      eanIssues,
-      disabled,
-      category,
-      productBrand,
-      productGroup,
-      brandId,
-      categoryId,
-      productGroupId,
-      barcodes,
-      size,
-      productOptions,
-    },
-    getProductGroups,
-    getCategories,
-    getBrands,
-    manuallyReplaceProductCore,
-    status,
     history,
     match: { params },
   } = props;
@@ -55,13 +20,23 @@ const CoreProductDesc = (props) => {
   const [checkbox, setCheckbox] = useState(false);
   const [valueEan, setValueEan] = useState("");
   const [coreImage, setCoreImage] = useState("");
-
-  console.log("size", size);
-
+  const { isLoading: coreProductIsLoading, data: coreProductData } = useGetSingleCoreProduct(params.id);
+  const { data: brandsData } = useGetAllBrands();
+  const { data: categoriesData } = useGetAllCategories();
+  const { data: customGroupsData } = useGetAllCustomGroups();
+  const { mutate: mergeProduct } = useMergeCoreProduct();
   const inputData = [
     { label: "Title", name: "title", type: "text", required: false },
     { label: "Size", name: "size", type: "number", required: false },
   ];
+
+  const mergeInputData = [
+    { label: "Base EAN", name: "baseEan", type: "text", required: true },
+    { label: "Target EAN", name: "targetEan", type: "text", required: true },
+  ];
+  const mergeInitialValue = {
+    baseEan: coreProductData?.core?.ean,
+  };
 
   const areaData = [
     { label: "Description", name: "description", required: false },
@@ -74,8 +49,7 @@ const CoreProductDesc = (props) => {
       name: "brandId",
       value: "id",
       option: "name",
-      action: getBrands,
-      store: "brands",
+      store: brandsData?.brands,
       lable: "Change brand",
       required: false,
       mode: false,
@@ -84,8 +58,8 @@ const CoreProductDesc = (props) => {
       name: "categoryId",
       value: "id",
       option: "name",
-      action: getCategories,
-      store: "categories",
+      store: categoriesData?.categories,
+
       lable: "Change category",
       required: false,
       mode: false,
@@ -94,8 +68,7 @@ const CoreProductDesc = (props) => {
       name: "productGroupId",
       value: "id",
       option: "name",
-      action: getProductGroups,
-      store: "productGroups",
+      store: customGroupsData?.productGroups,
       lable: "Change product group",
       required: false,
       mode: false,
@@ -103,61 +76,57 @@ const CoreProductDesc = (props) => {
   ];
 
   const switchData = [
-    { label: "Bundled", name: "bundled", default: bundled, required: false },
-    { label: "SecondaryImages", name: "secondaryImages", default: secondaryImages, required: false },
-    { label: "Reviewed", name: "reviewed", default: reviewed, required: false },
-    { label: "Product Options", name: "productOptions", default: productOptions, required: false },
+    { label: "Bundled", name: "bundled", default: coreProductData?.core?.bundled, required: false },
+    { label: "SecondaryImages", name: "secondaryImages", default: coreProductData?.core?.secondaryImages, required: false },
+    { label: "Reviewed", name: "reviewed", default: coreProductData?.core?.reviewed, required: false },
+    { label: "Product Options", name: "productOptions", default: coreProductData?.core?.productOptions, required: false },
   ];
 
   const initialValue = {
-    title,
-    image,
-    secondaryImages,
-    description,
-    features,
-    ingredients,
-    bundled,
-    brandId,
-    categoryId,
-    productGroupId,
-    size,
+    title: coreProductData?.core?.title,
+    image: coreProductData?.core?.image,
+    secondaryImages: coreProductData?.core?.secondaryImages,
+    description: coreProductData?.core?.description,
+    features: coreProductData?.core?.features,
+    ingredients: coreProductData?.core?.ingredients,
+    bundled: coreProductData?.core?.bundled,
+    brandId: coreProductData?.core?.brandId,
+    categoryId: coreProductData?.core?.categoryId,
+    productGroupId: coreProductData?.core?.productGroupId,
+    size: coreProductData?.core?.size,
   };
 
-  useEffect(() => {
-    getCoreProduct(params.id);
-  }, [getCoreProduct, params.id]);
+  // useEffect(() => {
+  //   getCoreProduct(params.id);
+  // }, [getCoreProduct, params.id]);
 
   useEffect(() => {
     if (checkbox) {
-      setValueEan(ean);
+      setValueEan(coreProductData?.core?.ean);
     } else {
       setValueEan("");
     }
-  }, [checkbox, ean]);
+  }, [checkbox, coreProductData]);
 
   const handleType = (e) => setValueEan(e.target.value);
 
-  const openNotification = () => {
-    notification["error"]({
-      message: "Error",
-      description: "Incorrect EAN",
-    });
-  };
-
   const handleManually = () => {
-    if (valueEan.length) {
-      manuallyReplaceProductCore({ id, suggestedEan: valueEan })
-        .then(() => history.goBack())
-        .catch(() => openNotification());
-    }
+    // if (valueEan.length) {
+    //   manuallyReplaceProductCore({ id, suggestedEan: valueEan })
+    //     .then(() => history.goBack())
+    //     .catch(() => openNotification());
+    // }
+    console.log("Handle Manually");
   };
 
   const onSendForm = (values) => {
-    const data = values;
-    if (coreImage.length) {
-      Object.assign(data, { image: coreImage });
-    }
-    editCoreProduct("EDIT_CORE_PRODUCT", id, data);
+    console.log(coreImage);
+    // const data = values;
+    // if (coreImage.length) {
+    //   Object.assign(data, { image: coreImage });
+    // }
+    // editCoreProduct("EDIT_CORE_PRODUCT", id, data);
+    console.log("Edit Core Product");
   };
 
   const parentCategory = (parent) => {
@@ -178,7 +147,13 @@ const CoreProductDesc = (props) => {
 
     return parents.reverse();
   };
-
+  const handleMergeProducts = (values) => {
+    const { baseEan, targetEan } = values;
+    mergeProduct({
+      baseId: Number(baseEan),
+      secondaryIds: targetEan.toString(),
+    });
+  };
   return (
     <CoreProductDescStyles>
       <Button type="primary" onClick={() => history.goBack()}>
@@ -187,70 +162,76 @@ const CoreProductDesc = (props) => {
       <div className="item-title">Core Product Details</div>
       <div className="item-wrapper">
         <div>
-          {Object.entries(coreProduct).length !== 0 && status === STATE_STATUSES.READY ? (
+          {!coreProductIsLoading && Object.entries(coreProductData?.core).length !== 0 ? (
             <>
-              {image ? <img className="core-image" src={`${image}?${+new Date().getTime()}`} alt="img" /> : null}
-              <div className="item-info">{title}</div>
+              {coreProductData?.core?.image ? (
+                <img className="core-image" src={`${coreProductData?.core?.image}?${+new Date().getTime()}`} alt="img" />
+              ) : null}
+              <div className="item-info">{coreProductData?.core?.title}</div>
               <div className="item-info">
-                EAN: <span>{ean}</span>
+                EAN: <span>{coreProductData?.core?.ean}</span>
               </div>
-              {description && (
+              {coreProductData?.core?.description && (
                 <div className="item-info">
-                  Description: <span>{description}</span>
+                  Description: <span>{coreProductData?.core?.description}</span>
                 </div>
               )}
-              {features && (
+              {coreProductData?.core?.features && (
                 <div className="item-info">
-                  Features: <span>{features}</span>
+                  Features: <span>{coreProductData?.core?.features}</span>
                 </div>
               )}
-              {ingredients && (
+              {coreProductData?.core?.ingredients && (
                 <div className="item-info">
-                  Ingredients: <span>{ingredients}</span>
+                  Ingredients: <span>{coreProductData?.core?.ingredients}</span>
                 </div>
               )}
               <div className="item-info">
-                Bundled: <Switch disabled checked={bundled} />
+                Bundled: <Switch disabled checked={coreProductData?.core?.bundled} />
               </div>
               <div className="item-info">
-                Secondary Images: <Switch disabled checked={secondaryImages} />
+                Secondary Images: <Switch disabled checked={coreProductData?.core?.secondaryImages} />
               </div>
               <div className="item-info">
-                Ean Issues: <Switch disabled checked={eanIssues} />
+                Ean Issues: <Switch disabled checked={coreProductData?.core?.eanIssues} />
               </div>
               <div className="item-info">
-                Reviewed: <Switch disabled checked={reviewed} />
+                Reviewed: <Switch disabled checked={coreProductData?.core?.reviewed} />
               </div>
               <div className="item-info">
-                Disabled: <Switch disabled checked={disabled} />
+                Disabled: <Switch disabled checked={coreProductData?.core?.disabled} />
               </div>
               <div className="item-info">
-                Product Options: <Switch disabled checked={productOptions} />
+                Product Options: <Switch disabled checked={coreProductData?.core?.productOptions} />
               </div>
-              {category && (
+              {coreProductData?.core?.category && (
                 <div className="item-info">
                   Category:{" "}
                   <span>
-                    {category.parent && parentCategory(category.parent).map((perent) => `${perent} / `)}
-                    {category.name}
+                    {coreProductData?.core?.category.parent &&
+                      parentCategory(coreProductData?.core?.category.parent).map((perent) => `${perent} / `)}
+                    {coreProductData?.core?.category.name}
                   </span>
                 </div>
               )}
-              {productBrand && (
+              {coreProductData?.core?.productBrand && (
                 <div className="item-info">
-                  Brand: <span>{productBrand.name}</span>
+                  Brand: <span>{coreProductData?.core?.productBrand.name}</span>
                 </div>
               )}
-              {productGroup && (
+              {coreProductData?.core?.productGroup && (
                 <div className="item-info">
-                  Product Groups: <span>{productGroup.name}</span>
+                  Product Groups: <span>{coreProductData?.core?.productGroup.name}</span>
                 </div>
               )}
               <div className="item-info">
-                Barcodes: <span>{barcodes.length ? barcodes.map((item) => ` ${item.barcode}, `) : "-"}</span>
+                Barcodes:{" "}
+                <span>
+                  {coreProductData?.core?.barcodes.length ? coreProductData?.core?.barcodes.map((item) => ` ${item.barcode}, `) : "-"}
+                </span>
               </div>
               <div className="item-info">
-                Size: <span>{size.length ? `${size}` : "-"}</span>
+                Size: <span>{coreProductData?.core?.size.length ? `${coreProductData?.core?.size}` : "-"}</span>
               </div>
             </>
           ) : (
@@ -287,27 +268,18 @@ const CoreProductDesc = (props) => {
               <Checkbox onChange={() => setCheckbox(!checkbox)}>Set own product</Checkbox>
             </Modal>
           </div>
-          <Button
-            className="resolve-box"
-            type="primary"
-            onClick={() =>
-              history.push(
-                `/merge-product/direction=ASC&noBrand=false&notReviewed=false&noCategory=false&issues=false&order=title&page=1&perPage=10&productId=${params.id}`
-              )
-            }
-          >
-            Merge
-          </Button>
+          <br />
+          <CoreForm
+            title={"Merge"}
+            className={"core-product"}
+            initialValue={mergeInitialValue}
+            inputData={mergeInputData}
+            onSendForm={handleMergeProducts}
+          />
         </div>
       </div>
     </CoreProductDescStyles>
   );
 };
 
-export default connect(
-  (state) => ({
-    coreProduct: state.coreProducts.coreProduct,
-    status: state.coreProducts.status,
-  }),
-  { getCoreProduct, editCoreProduct, getProductGroups, getCategories, getBrands, manuallyReplaceProductCore }
-)(withRouter(CoreProductDesc));
+export default withRouter(CoreProductDesc);

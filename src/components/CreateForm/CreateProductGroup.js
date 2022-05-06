@@ -1,57 +1,31 @@
-import React, { useState, useEffect, useRef } from "react";
-import { connect } from "react-redux";
+import React, { useState, useEffect } from "react";
 import { withRouter } from "react-router-dom";
 import { Input, Pagination, Popover, Checkbox, Button, Empty, DatePicker, Switch } from "antd";
 import moment from "moment";
 import { HexColorPicker } from "react-colorful";
-
-import { createProductGroup, addProductGroupCores } from "../../store/productGroups/action";
-import { getCoreProducts } from "../../store/coreProducts/action";
-// import { getUsers } from "../../store/users/action";
-// import { getCompanies } from "../../store/companies/action";
-import { getCategories } from "../../store/categories/action";
-import { getBrands } from "../../store/manufacturersBrands/action";
-import { getManufacturers } from "../../store/manufacturersBrands/action";
-import { getProductGroups, getProductGroup } from "../../store/productGroups/action";
-
 import SelectBox from "../ModalFrom/Select";
 import Multiselect from "../ModalFrom/Multiselect";
 import Loader from "../Loader/Loader";
-
-import { STATE_STATUSES } from "../../utils/app";
-
 import { ClearOutlined } from "@ant-design/icons";
-
+import { useGetAllManufacturers } from "../../Requests/ManufacturerRequest";
+import { useGetAllBrands } from "../../Requests/BrandRequest";
+import { useGetAllCategories } from "../../Requests/CategoryRequest";
+import {
+  useGetAllCustomGroups,
+  useGetSingleCustomGroups,
+  useCreateCustomGroup,
+  useAddCoreProductsCustomGroup,
+} from "../../Requests/CustomGroupRequest";
+import { useGetAllCompanies } from "../../Requests/CompanyRequest";
+import { useGetAllUsers } from "../../Requests/UsersRequest";
+import { useGetAllCoreProducts } from "../../Requests/CoreProductRequest";
 const CreateProductGroup = (props) => {
   const { RangePicker } = DatePicker;
 
   const {
-    createProductGroup,
-    addProductGroupCores,
-    getCoreProducts,
-    getBrands,
-    getCategories,
-    getManufacturers,
-    getProductGroups,
-    getProductGroup,
-    selectCoreProducts,
-    rows,
-    count,
-    status,
+    history,
     match: { params },
   } = props;
-
-  const [isCreateProduct, setIsCreateProduct] = useState(true);
-
-  const [queryParams, setQueryParams] = useState({
-    name: "",
-    color: "#ffffff",
-    userId: null,
-    companyId: null,
-    coreProducts: [],
-  });
-
-  console.log("queryParams", queryParams);
   const [coreParams, setCoreParams] = useState({
     title: "",
     ean: "",
@@ -62,77 +36,135 @@ const CreateProductGroup = (props) => {
     issues: false,
     notReviewed: false,
   });
+  const { isLoading: brandsIsLoading, data: brandsData } = useGetAllBrands();
+  const { isLoading: categoriesIsLoading, data: categoriesData } = useGetAllCategories();
+  const { isLoading: manufacturerIsLoading, data: manufacturerData } = useGetAllManufacturers();
+  const { isLoading: customGroupsIsLoading, data: customGroupsData } = useGetAllCustomGroups();
+  const { isLoading: singleCustomGroupsIsLoading, data: singleCustomGroupsData, refetch } = useGetSingleCustomGroups(params.id);
+  const { mutate: createCustomGroup, status: customGroupCreateStatus } = useCreateCustomGroup();
+  const { mutate: updateCoreProducts, status: addCoreProductsStatus } = useAddCoreProductsCustomGroup();
+
+  const { isLoading: companiesIsLoading, data: companiesData } = useGetAllCompanies();
+  const { isLoading: usersIsLoading, data: usersData } = useGetAllUsers();
+  const { isLoading: coreProductsIsLoading, data: coreProductsData } = useGetAllCoreProducts(coreParams);
+  const [isCreateProduct, setIsCreateProduct] = useState(true);
+  console.log(companiesData);
+  console.log(usersData);
+  const [queryParams, setQueryParams] = useState({
+    name: "",
+    color: "#ffffff",
+    userId: null,
+    companyId: null,
+    coreProducts: [],
+  });
+
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [clearSelect, setClearSelect] = useState({});
-
   const [dateInterval, setDateInterval] = useState([]);
-
   const [visibleColors, setVisibleColors] = useState(false);
-
-  const [heightDiv, setHeightDiv] = useState(0);
-  const ref = useRef(null);
-
-  const [selectData] = useState([
-    {
-      name: "brand",
-      value: "id",
-      option: "name",
-      action: getBrands,
-      store: "brands",
-      lable: "Brand",
-      placeholder: "Brand",
-      initialValue: queryParams.brand,
-    },
-    {
-      name: "category",
-      value: "id",
-      option: "name",
-      action: getCategories,
-      store: "categories",
-      lable: "Category",
-      placeholder: "Category",
-      initialValue: queryParams.category,
-    },
-    {
-      name: "productGroup",
-      value: "id",
-      option: "name",
-      action: getProductGroups,
-      store: "productGroups",
-      lable: "Product Group",
-      placeholder: "Product Group",
-      initialValue: queryParams.productGroup,
-    },
-    {
-      name: "manufacturer",
-      value: "id",
-      option: "name",
-      action: getManufacturers,
-      store: "manufacturers",
-      lable: "Manufacturer",
-      placeholder: "Manufacturer",
-      initialValue: queryParams.manufacturer,
-    },
+  const [selectData, setSelectData] = useState(null);
+  useEffect(() => {
+    if (!brandsIsLoading && !categoriesIsLoading && !manufacturerIsLoading && !customGroupsIsLoading) {
+      setSelectData([
+        {
+          name: "brand",
+          value: "id",
+          option: "name",
+          store: brandsData?.brands,
+          lable: "Brand",
+          placeholder: "Brand",
+          initialValue: queryParams.brand,
+        },
+        {
+          name: "category",
+          value: "id",
+          option: "name",
+          store: categoriesData?.categories,
+          lable: "Category",
+          placeholder: "Category",
+          initialValue: queryParams.category,
+        },
+        {
+          name: "productGroup",
+          value: "id",
+          option: "name",
+          store: customGroupsData?.productGroups,
+          lable: "Product Group",
+          placeholder: "Product Group",
+          initialValue: queryParams.productGroup,
+        },
+        {
+          name: "manufacturer",
+          value: "id",
+          option: "name",
+          store: manufacturerData?.manufacturers,
+          lable: "Manufacturer",
+          placeholder: "Manufacturer",
+          initialValue: queryParams.manufacturer,
+        },
+      ]);
+    }
+  }, [
+    brandsIsLoading,
+    categoriesIsLoading,
+    manufacturerIsLoading,
+    customGroupsIsLoading,
+    brandsData,
+    manufacturerData,
+    categoriesData,
+    customGroupsData,
+    queryParams,
   ]);
+  const [selects, setSelects] = useState(null);
 
-  const selects = [
-    { param: "companyId", value: "id", option: "name", lable: "Company", initialValue: queryParams.companyId },
-    { param: "userId", value: "id", option: "email", lable: "User", initialValue: queryParams.userId },
-  ];
+  useEffect(() => {
+    if (!companiesIsLoading && !usersIsLoading) {
+      setSelects([
+        {
+          param: "company",
+          initialValue: queryParams.company,
+          // selectData: { selectValueSet },
+          placeholder: "Select Company",
+          actionParam: "company",
+          value: "name",
+          option: "name",
+          // initialId={item.initial}
+          lable: "Company",
+          store: companiesData?.companies,
+          clearSelect: { clearSelect },
+        },
+        {
+          param: "userId",
+          initialValue: queryParams.userId,
+          placeholder: "Select User",
+          actionParam: "userId",
+          value: "id",
+          option: "email",
+          lable: "User",
+          store: usersData?.users,
+          clearSelect: { clearSelect },
+        },
+      ]);
+    }
+  }, [queryParams, companiesData, companiesIsLoading, clearSelect, usersData, usersIsLoading]);
 
   useEffect(() => {
     if (Number(params.id) !== 0) {
       setIsCreateProduct(false);
-      getProductGroup(params.id);
+      refetch();
     }
-  }, [params]);
+  }, [params, refetch]);
 
   useEffect(() => {
-    if (selectCoreProducts.length && Number(params.id) !== 0) {
-      const selectProducts = selectCoreProducts.map((product) => ({ title: product.title, id: product.id }));
+    if (
+      !singleCustomGroupsIsLoading &&
+      singleCustomGroupsData &&
+      singleCustomGroupsData?.productGroup?.coreProduct.length &&
+      Number(params.id) !== 0
+    ) {
+      const selectProducts = singleCustomGroupsData?.productGroup?.coreProduct.map((product) => ({ title: product.title, id: product.id }));
       setSelectedProducts(selectProducts);
-
-      const selectProductsQuery = selectCoreProducts.map((product) => product.id);
+      const selectProductsQuery = singleCustomGroupsData?.productGroup?.coreProduct.map((product) => product.id);
       setQueryParams((queryParams) => {
         return {
           ...queryParams,
@@ -140,15 +172,7 @@ const CreateProductGroup = (props) => {
         };
       });
     }
-  }, [selectCoreProducts, params]);
-
-  useEffect(() => {
-    setHeightDiv(ref.current.clientHeight);
-  });
-
-  useEffect(() => {
-    getCoreProducts(coreParams);
-  }, [coreParams]);
+  }, [singleCustomGroupsIsLoading, singleCustomGroupsData, params]);
 
   useEffect(() => {
     if (queryParams.createdStart) {
@@ -306,19 +330,33 @@ const CreateProductGroup = (props) => {
       };
     });
   };
+  useEffect(() => {
+    if (customGroupCreateStatus === "success") {
+      history.push("/product-groups/page=0&perPage=10");
+    }
+  }, [customGroupCreateStatus, history]);
 
-  // const onVisibleChange = () => {
-  //   setVisibleColors
-  // };
-
+  useEffect(() => {
+    if (addCoreProductsStatus === "success") {
+      history.push("/product-groups/page=0&perPage=10");
+    }
+  }, [addCoreProductsStatus, history]);
   const handleSubmit = () => {
     if (isCreateProduct) {
-      createProductGroup(queryParams).then(() => props.history.push("/product-groups/page=0&perPage=10"));
+      createCustomGroup(queryParams);
     } else {
-      addProductGroupCores({ coreProducts: queryParams.coreProducts }, params.id).then(() =>
-        props.history.push(`/product-group/${params.id}`)
-      );
+      updateCoreProducts({ values: { coreProducts: queryParams.coreProducts }, id: params.id });
+      // .then(() =>
+      //     props.history.push(`/product-group/${params.id}`)
+      //   );
     }
+    // if (isCreateProduct) {
+    //   createProductGroup(queryParams).then(() => props.history.push("/product-groups/page=0&perPage=10"));
+    // } else {
+    //   addProductGroupCores({ coreProducts: queryParams.coreProducts }, params.id).then(() =>
+    //     props.history.push(`/product-group/${params.id}`)
+    //   );
+    // }
   };
 
   const handleBack = () => {
@@ -337,7 +375,7 @@ const CreateProductGroup = (props) => {
 
       <div className="item-title">{isCreateProduct ? "Create product group" : "Edit core products"}</div>
       <div className="wrapper-filter-categoty">
-        {isCreateProduct ? (
+        {isCreateProduct && !companiesIsLoading && !usersIsLoading && selects ? (
           <>
             <div className="wrapper-form-item">
               <div className="lable-item">Name</div>
@@ -359,21 +397,26 @@ const CreateProductGroup = (props) => {
               </Popover>
             </div>
 
-            {selects.map((item, index) => (
-              <div key={index} className="select-filter-categoty">
-                <SelectBox
-                  initialValue={item.initialValue}
-                  selectData={handleSetSelect}
-                  actionParam={item.param}
-                  value={item.value}
-                  option={item.option}
-                  initialId={item.initial}
-                  lable={item.lable}
-                  clearSelect={clearSelect}
-                />
-                <ClearOutlined onClick={() => handleClearSelect(item.param)} />
-              </div>
-            ))}
+            {!companiesIsLoading &&
+              !usersIsLoading &&
+              selects &&
+              selects.map((item, index) => (
+                <div key={index} className="select-filter-categoty">
+                  <SelectBox
+                    initialValue={item.initialValue}
+                    selectData={handleSetSelect}
+                    placeholder={item.placeholder}
+                    actionParam={item.param}
+                    value={item.value}
+                    option={item.option}
+                    initialId={item.initial}
+                    lable={item.lable}
+                    store={item.store}
+                    clearSelect={clearSelect}
+                  />
+                  <ClearOutlined onClick={() => handleClearSelect(item.param)} />
+                </div>
+              ))}
           </>
         ) : null}
 
@@ -387,63 +430,67 @@ const CreateProductGroup = (props) => {
           <Input value={coreParams.ean} name={"ean"} type={"text"} placeholder={"Enter EAN"} onChange={handleSeInput} />
         </div>
 
-        {selectData.map((item, index) => (
-          <Multiselect
-            key={index}
-            action={item.action}
-            store={item.store}
-            name={item.name}
-            lable={item.lable}
-            value={item.value}
-            option={item.option}
-            placeholder={item.placeholder}
-            initialValue={item.initialValue}
-            setSelectList={setSelectList}
-          />
-        ))}
+        {!brandsIsLoading &&
+        !categoriesIsLoading &&
+        !manufacturerIsLoading &&
+        !customGroupsIsLoading &&
+        !coreProductsIsLoading &&
+        selectData ? (
+          <>
+            {selectData.map((item, index) => (
+              <Multiselect
+                key={index}
+                action={item.action}
+                store={item.store}
+                name={item.name}
+                lable={item.lable}
+                value={item.value}
+                option={item.option}
+                placeholder={item.placeholder}
+                initialValue={item.initialValue}
+                setSelectList={setSelectList}
+              />
+            ))}
+            <div className="filter-wrapper">
+              <div className="filter-box">
+                <p>Date:</p>
+                <RangePicker value={dateInterval} onChange={(date, dateString) => getSelectDate(date, dateString)} />
+              </div>
 
-        <div className="filter-wrapper">
-          <div className="filter-box">
-            <p>Date:</p>
-            <RangePicker value={dateInterval} onChange={(date, dateString) => getSelectDate(date, dateString)} />
-          </div>
+              <div className="filter-box">
+                <p>No Category</p>
+                <Switch checked={coreParams.noCategory} name="noCategory" onChange={onChangeSwitch} />
+              </div>
 
-          <div className="filter-box">
-            <p>No Category</p>
-            <Switch checked={coreParams.noCategory} name="noCategory" onChange={onChangeSwitch} />
-          </div>
+              <div className="filter-box">
+                <p>No Brand</p>
+                <Switch checked={coreParams.noBrand} name="noBrand" onChange={onChangeSwitch} />
+              </div>
 
-          <div className="filter-box">
-            <p>No Brand</p>
-            <Switch checked={coreParams.noBrand} name="noBrand" onChange={onChangeSwitch} />
-          </div>
+              <div className="filter-box">
+                <p>Invalid EAN</p>
+                <Switch checked={coreParams.issues} name="issues" onChange={onChangeSwitch} />
+              </div>
 
-          <div className="filter-box">
-            <p>Invalid EAN</p>
-            <Switch checked={coreParams.issues} name="issues" onChange={onChangeSwitch} />
-          </div>
+              <div className="filter-box">
+                <p>Not reviewed</p>
+                <Switch checked={coreParams.notReviewed} name="notReviewed" onChange={onChangeSwitch} />
+              </div>
 
-          <div className="filter-box">
-            <p>Not reviewed</p>
-            <Switch checked={coreParams.notReviewed} name="notReviewed" onChange={onChangeSwitch} />
-          </div>
+              <div className="filter-box">
+                <p>Goto Page:</p>
+                <Input value={coreParams.page} name="page" type="number" min="1" onChange={handlePage} />
+              </div>
+            </div>
 
-          <div className="filter-box">
-            <p>Goto Page:</p>
-            <Input value={coreParams.page} name="page" type="number" min="1" onChange={handlePage} />
-          </div>
-        </div>
-
-        <div className="core-products-wrapper">
-          <div style={{ width: "50%" }}>
-            <div className="title-products">All core products</div>
-            <div className="all-products" ref={ref}>
-              <div className="products-list">
-                {status === STATE_STATUSES.READY ? (
-                  <>
-                    {rows.length ? (
-                      rows.map((product) => (
-                        <div key={product.id} className="core-product-item">
+            <div className="core-products-wrapper">
+              <div style={{ width: "50%" }}>
+                <div className="title-products">All core products</div>
+                <div className="all-products">
+                  <div className="products-list">
+                    {coreProductsData?.cores?.rows.length ? (
+                      coreProductsData?.cores?.rows.map((product, index) => (
+                        <div key={index} className="core-product-item">
                           <Checkbox checked={queryParams.coreProducts.includes(product.id)} onChange={() => handleSelectProduct(product)}>
                             {product.title}
                           </Checkbox>
@@ -454,45 +501,48 @@ const CreateProductGroup = (props) => {
                         <Empty />
                       </div>
                     )}
-                  </>
-                ) : (
-                  <div className="wrapper-box">
-                    <Loader />
                   </div>
-                )}
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div style={{ width: "50%" }}>
-            <div className="title-products">Selected core products: {selectedProducts.length}</div>
-            <div style={{ height: `${heightDiv}px` }} className="selected-products">
-              <div className="products-list">
-                {selectedProducts.length ? (
-                  selectedProducts.map((product) => (
-                    <div key={product.id} className="core-product-item">
-                      <Checkbox checked={queryParams.coreProducts.includes(product.id)} onChange={() => handleSelectProduct(product)}>
-                        {product.title}
-                      </Checkbox>
-                    </div>
-                  ))
-                ) : (
-                  <div className="wrapper-box">
-                    <Empty />
+              <div style={{ width: "50%" }}>
+                <div className="title-products">Selected core products: {selectedProducts.length}</div>
+                <div className="selected-products">
+                  <div className="products-list">
+                    {selectedProducts.length ? (
+                      selectedProducts.map((product, index) => (
+                        <div key={index} className="core-product-item">
+                          <Checkbox checked={queryParams.coreProducts.includes(product.id)} onChange={() => handleSelectProduct(product)}>
+                            {product.title}
+                          </Checkbox>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="wrapper-box">
+                        <Empty />
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        <Pagination
-          className="pagination-controls"
-          total={count * coreParams.perPage}
-          pageSize={coreParams.perPage}
-          current={coreParams.page}
-          onChange={onChangePage}
-          onShowSizeChange={onChangePerPage}
-        />
+          </>
+        ) : (
+          <Loader />
+        )}
+
+        {coreProductsData && (
+          <>
+            <Pagination
+              className="pagination-controls"
+              total={coreProductsData?.cores?.count * coreParams.perPage}
+              pageSize={coreParams.perPage}
+              current={coreParams.page}
+              onChange={onChangePage}
+              onShowSizeChange={onChangePerPage}
+            />
+          </>
+        )}
       </div>
 
       <Button type="primary" onClick={handleSubmit}>
@@ -502,21 +552,4 @@ const CreateProductGroup = (props) => {
   );
 };
 
-export default connect(
-  (state) => ({
-    rows: state.coreProducts.coreProducts.rows,
-    count: state.coreProducts.coreProducts.count,
-    status: state.coreProducts.status,
-    selectCoreProducts: state.productGroups.productGroup.coreProduct,
-  }),
-  {
-    getCoreProducts,
-    createProductGroup,
-    addProductGroupCores,
-    getBrands,
-    getProductGroup,
-    getCategories,
-    getProductGroups,
-    getManufacturers,
-  }
-)(withRouter(CreateProductGroup));
+export default withRouter(CreateProductGroup);

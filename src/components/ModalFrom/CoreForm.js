@@ -43,7 +43,7 @@ const CoreForm = (props) => {
       </Button>
       <Modal
         // forceRender={true}
-        //className={`modal-form ${props.className}`}
+        className={`modal-form ${props.className}`}
         title={props.title}
         visible={visible}
         okText="Submit"
@@ -112,6 +112,7 @@ const CoreForm = (props) => {
                   key={index}
                   label={item.label}
                   name={item.name}
+                  style={item?.display === false ? { display: "none" } : {}}
                   rules={[{ required: item.required, message: `Please input ${item.label}!` }]}
                 >
                   <TextArea placeholder={item.label} />
@@ -135,7 +136,16 @@ const CoreForm = (props) => {
                 />
               ))
             : null}
-          <div>{switchData && switchData.length ? switchData.map((item, index) => <SwitchBox item={item} key={index} />) : null}</div>
+          <div>
+            {switchData && switchData.length
+              ? switchData.map((item, index) => (
+                  <div key={index} style={item?.display === false ? { display: "none" } : {}}>
+                    {" "}
+                    <SwitchBox item={item} />
+                  </div>
+                ))
+              : null}
+          </div>
 
           {props.selectDate && props.selectDate.length
             ? props.selectDate.map((item, index) => (

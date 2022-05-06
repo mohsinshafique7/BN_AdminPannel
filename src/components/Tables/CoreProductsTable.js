@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Table, Pagination, Switch } from "antd";
+import { Table, Pagination, Switch, Popover, Button } from "antd";
 import { Link } from "react-router-dom";
 import { FilterFilled } from "@ant-design/icons";
 import _ from "lodash";
-import moment from "moment";
 import styled from "styled-components";
 import CoreForm from "components/ModalFrom/CoreForm";
-import { CoreProductEditInput } from "../../utils/FormInputs";
+import { CoreProductEditInput } from "../../utils/FormInputs/CoreProductFormInputs";
 import { useGetAllCategories } from "../../Requests/CategoryRequest";
 import { useGetAllBrands } from "../../Requests/BrandRequest";
 
@@ -19,7 +18,7 @@ export const Styles = styled.div`
     margin-top: 25px;
   }
 `;
-const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, handleCoreProductEdit, setCoreImage }) => {
+const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, handleCoreProductEdit, setCoreImage, isMerge }) => {
   const { isLoading: categoriesIsLoading, data: categoriesData } = useGetAllCategories();
   const { isLoading: brandsIsLoading, data: brandsData } = useGetAllBrands();
 
@@ -40,7 +39,6 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, ha
       categoryId: item?.category?.id,
       brandId: item?.productBrand?.id,
       invalidEan: item.eanIssues,
-      dateCreated: item.createdAt,
       secondaryImages: item.secondaryImages,
       description: item.description,
       features: item.features,
@@ -48,6 +46,7 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, ha
       bundled: item.bundled,
       productOptions: item.productOptions,
       reviewed: item.reviewed,
+      source: item?.products[0]?.href,
     };
   });
 
@@ -100,18 +99,25 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, ha
       dataIndex: "image",
       key: "image",
       width: "5%",
-      render: (text) => <img width="70px" height="70px" src={`${text}?${+new Date().getTime()}`} alt="product" />,
+      render: (text) => (
+        <Popover
+          content={
+            <div style={{ width: "500px", height: "500px" }}>
+              <img width="100%" height="100%" src={`${text}?${+new Date().getTime()}`} alt="product" />
+            </div>
+          }
+          trigger="click"
+        >
+          <Button type="primary">Click</Button>
+        </Popover>
+      ),
     },
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
       width: "35%",
-      render: (text, record) => (
-        <Link style={{ fontSize: "1.2rem" }} to={`/core-product/${record.key}`}>
-          {text}
-        </Link>
-      ),
+      render: (text, record) => <Link to={`/core-product/${record.key}`}>{text}</Link>,
       sorter: (a, b) => {
         if (a.name < b.name) {
           return -1;
@@ -162,15 +168,18 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, ha
       dataIndex: "invalidEan",
       key: "invalidEan",
       width: "10%",
-      render: (text, record) => <Switch defaultChecked={text} disabled />,
+      render: (text) => <Switch defaultChecked={text} disabled />,
     },
     {
-      title: "Date Created",
-      dataIndex: "dateCreated",
-      key: "dateCreated",
+      title: "Source",
+      dataIndex: "source",
+      key: "source",
       width: "10%",
-      render: (text) => moment(text).format("YYYY-MM-DD"),
-      filterIcon: (filtered) => <FilterFilled style={{ color: filtered ? "#1890ff" : undefined }} />,
+      render: (text) => (
+        <Link to={{ pathname: text }} target="_blank">
+          Source
+        </Link>
+      ),
     },
   ];
 

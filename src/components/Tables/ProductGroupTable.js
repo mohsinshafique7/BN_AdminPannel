@@ -7,7 +7,9 @@ import styled from "styled-components";
 import CoreForm from "components/ModalFrom/CoreForm";
 import { useGetAllUsers } from "../../Requests/UsersRequest";
 import { useGetAllCompanies } from "../../Requests/CompanyRequest";
-import { CustomGroupEditInput, renderTableData, getFilter } from "../../utils/FormInputs";
+import { CustomGroupEditInput } from "../../utils/FormInputs/CustomGroupFormInputs";
+import { renderTableData, getFilter } from "../../utils/helpers";
+
 export const Styles = styled.div`
   margin-top: 15px;
 

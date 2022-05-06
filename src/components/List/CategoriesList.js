@@ -1,23 +1,21 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { withRouter } from "react-router-dom";
 import qs from "query-string";
-import { getCategories } from "../../store/categories/action";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
 import CoreForm from "../ModalFrom/CoreForm";
-import { notification } from "antd";
 import CategoryTable from "components/Tables/CategoryTable";
 import { useGetAllCategories, useCreateCategory, useUpdateCategory } from "../../Requests/CategoryRequest";
-import { categoryCreateInput } from "../../utils/FormInputs";
+import { categoryCreateInput } from "../../utils/FormInputs/CategoryFormInputs";
 const CategoriesList = (props) => {
   const {
     match: { params },
     history,
   } = props;
-  const { isLoading: categoriesIsLoading, data: categoriesData } = useGetAllCategories();
-  const { mutate: createCategory, isError: createCategoryIsError } = useCreateCategory();
-  const { mutate: updateCategory, isError: updateCategoryIsError } = useUpdateCategory();
+  const { isLoading: categoriesIsLoading, data: categoriesData, status: categoriesStatus } = useGetAllCategories();
+  const { mutate: createCategory } = useCreateCategory();
+  const { mutate: updateCategory } = useUpdateCategory("list");
 
   const [formInputs, setFormInputs] = useState(null);
   useEffect(() => {
@@ -30,7 +28,6 @@ const CategoriesList = (props) => {
       searchValue: state.filters.searchValue,
     };
   });
-  const dispatch = useDispatch();
 
   const initialValue = {
     subscription: true,
@@ -43,21 +40,11 @@ const CategoriesList = (props) => {
     history.replace(`/categories/${queryString}`);
   }, [queryParams, history]);
 
-  useEffect(() => {
-    dispatch(getCategories());
-  }, [dispatch]);
-
   const onSendForm = (values) => {
     const data = { ...values, status: { subscription: values.subscription } };
     delete data["subscription"];
+    console.log(data);
     createCategory(data);
-  };
-
-  const openNotification = (type) => {
-    notification[type]({
-      message: "Error",
-      description: "This category already exists.",
-    });
   };
 
   const setPage = (page) => {
@@ -113,7 +100,7 @@ const CategoriesList = (props) => {
       <div className="item-title">Categories</div>
       <Search />
 
-      {!categoriesIsLoading && formInputs ? (
+      {categoriesStatus === "success" && !categoriesIsLoading && formInputs ? (
         <>
           <CoreForm
             initialValue={initialValue}

@@ -12,8 +12,8 @@ const ProductGroupsList = (props) => {
     match: { params },
     history,
   } = props;
-  const { isLoading: customGroupsIsLoading, data: customGroupsData } = useGetAllCustomGroups();
-  const { mutate: updateCustomGroup, isError: updateCustomGroupIsError } = useUpdateCustomGroup();
+  const { isLoading: customGroupsIsLoading, data: customGroupsData, status: customGroupListStatus } = useGetAllCustomGroups();
+  const { mutate: updateCustomGroup } = useUpdateCustomGroup("list");
   const { searchValue } = useSelector((state) => {
     return {
       searchValue: state.filters.searchValue,
@@ -68,7 +68,7 @@ const ProductGroupsList = (props) => {
       <Button type="primary" href={"/create-product-group/0"}>
         Create Product
       </Button>
-      {!customGroupsIsLoading ? (
+      {customGroupListStatus === "success" && !customGroupsIsLoading ? (
         <ProductGroupTable
           data={searchedData}
           page={Number(queryParams.page)}

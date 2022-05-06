@@ -1,3 +1,5 @@
+import _ from "lodash";
+import { notification } from "antd";
 export const searchSort = (data, searchValue, sortedValue, searchParam, reverse) => {
   let filterData = data;
 
@@ -288,16 +290,35 @@ export const searchSort = (data, searchValue, sortedValue, searchParam, reverse)
   return filterData;
 };
 
-export const deepSearch = (findBy, childrenP, tree, value ) => {
-  const toCheck = [...tree]
-  let item = null
-  while((item = toCheck.pop())) {
-    if(item[findBy] === value) {
-      
-      return item
+export const deepSearch = (findBy, childrenP, tree, value) => {
+  const toCheck = [...tree];
+  let item = null;
+  while ((item = toCheck.pop())) {
+    if (item[findBy] === value) {
+      return item;
     }
-    if(item[childrenP]) {
-      toCheck.unshift(...item[childrenP])
+    if (item[childrenP]) {
+      toCheck.unshift(...item[childrenP]);
     }
   }
-}
+};
+
+export const renderTableData = (page, perPage, dataSource) => {
+  const limit = page * perPage + perPage < dataSource.length ? page * perPage + perPage : dataSource.length;
+  return dataSource.slice(page * perPage, limit);
+};
+export const getFilter = (data, name) => {
+  return _.uniq(_.map(data, name)).map((item) => {
+    return { text: item, value: item };
+  });
+};
+export const setColor = (color) => {
+  return { backgroundColor: color, padding: "10px", border: "1px solid green" };
+};
+
+export const openNotification = (type, message = "Error", description = "An Error Occured") => {
+  notification[type]({
+    message,
+    description,
+  });
+};

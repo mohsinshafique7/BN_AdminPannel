@@ -1,12 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Select } from "antd";
-import { connect } from "react-redux";
-import { useGetAllBrands } from "../../Requests/BrandRequest";
 const Multiselect = (props) => {
   const { Option } = Select;
   const { initialValue } = props;
-
-  console.log("Storevalues", props?.store);
 
   const handleChange = (values) => {
     props.setSelectList(props.name, values.join());

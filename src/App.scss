@@ -571,7 +571,7 @@ table {
   color: $navBarLinkSelect !important;
 }
 
-.ant-menu-dark .ant-menu-item-selected > a > .color-selected {
+.ant-menu-dark .ant-menu-item-selected > span > a > .color-selected{
   color: $navBarLinkSelect !important;
 }
 

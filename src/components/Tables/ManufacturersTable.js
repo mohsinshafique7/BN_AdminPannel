@@ -6,7 +6,8 @@ import _ from "lodash";
 import moment from "moment";
 import CoreForm from "components/ModalFrom/CoreForm";
 import styled from "styled-components";
-import { manufacturerEditInputs, renderTableData, getFilter, setColor } from "../../utils/FormInputs";
+import { renderTableData, getFilter, setColor } from "../../utils/helpers";
+import { manufacturerEditInputs } from "../../utils/FormInputs/ManufacturerFormInputs";
 
 export const Styles = styled.div`
   margin-top: 15px;
@@ -89,25 +90,12 @@ const ManufacturersTable = ({ data, page, perPage, setPage, setPerPage, handleEd
       dataIndex: "brand",
       width: "60%",
       key: "brand",
-      // filterSearch: true,
       render: (text, record) =>
         text.map((i, index) => (
           <Link key={index} to={`/brand/${i.id}/brand/page=0&perPage=10`}>
             {index !== 0 ? i.name + " / " : i.name}
           </Link>
         )),
-      // sorter: (a, b) => {
-      //   if (a.brand < b.brand) {
-      //     return -1;
-      //   }
-      //   if (a.brand > b.brand) {
-      //     return 1;
-      //   }
-      //   return 0;
-      // },
-      // filterIcon: (filtered) => <FilterFilled style={{ fontSize: "15px", color: filtered ? "#1890ff" : undefined }} />,
-      // filters: _.orderBy(brandFilters, "text", "asc"),
-      // onFilter: (value, record) => record.brand === value,
     },
     {
       title: "Color",

@@ -1,9 +1,8 @@
 import React, { useMemo } from "react";
-import { Table, Pagination } from "antd";
+import { Table } from "antd";
 import { Link } from "react-router-dom";
 import { FilterFilled } from "@ant-design/icons";
 import { useSelector } from "react-redux";
-import _ from "lodash";
 import moment from "moment";
 import styled from "styled-components";
 export const Styles = styled.div`
@@ -29,13 +28,7 @@ const ManufacturerBrandTable = ({ data }) => {
       searchValue: state.filters.searchValue,
     };
   });
-  // const brandFilters = _.uniq(_.map(renderData, "name")).map((item) => {
-  //   return { text: item, value: item };
-  // });
 
-  // const manufacturerFilters = _.uniq(_.map(renderData, "manufacturer")).map((item) => {
-  //   return { text: item, value: item };
-  // });
   const columns = [
     {
       title: "Core Product",
@@ -43,19 +36,6 @@ const ManufacturerBrandTable = ({ data }) => {
       key: "productName",
       width: "30%",
       render: (text, record) => <Link to={`/core-product/${record.key}`}>{text}</Link>,
-      // sorter: (a, b) => {
-      //   if (a.name < b.name) {
-      //     return -1;
-      //   }
-      //   if (a.name > b.name) {
-      //     return 1;
-      //   }
-      //   return 0;
-      // },
-      // filters: _.orderBy(brandFilters, "text", "asc"),
-      // onFilter: (value, record) => record.name === value,
-      // filterSearch: true,
-      // filterIcon: (filtered) => <FilterFilled style={{ color: filtered ? "#1890ff" : undefined }} />,
     },
 
     {
@@ -64,18 +44,6 @@ const ManufacturerBrandTable = ({ data }) => {
       key: "ean",
       width: "20%",
       filterSearch: true,
-      // sorter: (a, b) => {
-      //   if (a.brand < b.brand) {
-      //     return -1;
-      //   }
-      //   if (a.brand > b.brand) {
-      //     return 1;
-      //   }
-      //   return 0;
-      // },
-      // filterIcon: (filtered) => <FilterFilled style={{ fontSize: "15px", color: filtered ? "#1890ff" : undefined }} />,
-      // filters: _.orderBy(manufacturerFilters, "text", "asc"),
-      // onFilter: (value, record) => record.manufacturer === value,
     },
     {
       title: "Date Created",

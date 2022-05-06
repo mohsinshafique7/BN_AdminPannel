@@ -6,7 +6,9 @@ import _ from "lodash";
 import moment from "moment";
 import styled from "styled-components";
 import CoreForm from "components/ModalFrom/CoreForm";
-import { usersEditInputs, renderTableData, getFilter } from "../../utils/FormInputs";
+import { usersEditInputs } from "../../utils/FormInputs/UsersFormInputs";
+import { renderTableData, getFilter } from "../../utils/helpers";
+
 import { useGetAllCompanies } from "../../Requests/CompanyRequest";
 export const Styles = styled.div`
   margin-top: 15px;

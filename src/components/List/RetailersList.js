@@ -5,18 +5,17 @@ import qs from "query-string";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
 import CoreForm from "../ModalFrom/CoreForm";
-import { notification } from "antd";
 import RetailerTable from "components/Tables/RetailerTable";
-import { retailerCreateInput } from "../../utils/FormInputs";
+import { retailerCreateInput } from "../../utils/FormInputs/RetailerFormInputs";
 import { useGetAllRetailers, useCreateRetailer, useUpdateRetailer } from "../../Requests/RetailerRequest";
 const RetailersList = (props) => {
   const {
     match: { params },
     history,
   } = props;
-  const { isLoading: retailersIsLoading, data: retailersData } = useGetAllRetailers();
-  const { mutate: createRetailer, isError: createRetailerIsError } = useCreateRetailer();
-  const { mutate: updateRetailer, isError: updateRetailerIsError } = useUpdateRetailer();
+  const { isLoading: retailersIsLoading, data: retailersData, status: retailersStatus } = useGetAllRetailers();
+  const { mutate: createRetailer } = useCreateRetailer();
+  const { mutate: updateRetailer } = useUpdateRetailer("list");
   const formInputs = retailerCreateInput();
   const { searchValue } = useSelector((state) => {
     return {
@@ -39,13 +38,6 @@ const RetailersList = (props) => {
     const search = new RegExp(searchValue, "gi");
     return retailersData?.retailers.filter((item) => item.name.match(search));
   }, [searchValue, retailersData]);
-
-  const openNotification = (type) => {
-    notification[type]({
-      message: "Error",
-      description: "This retailer already exists.",
-    });
-  };
 
   const setPage = (page) => {
     setQueryParams((queryParams) => {
@@ -73,7 +65,7 @@ const RetailersList = (props) => {
       <div className="item-title">Retailers</div>
       <Search />
       <CoreForm title={"Create Retailer"} inputData={formInputs.inputData} onSendForm={onSendForm} />
-      {!retailersIsLoading ? (
+      {retailersStatus === "success" && !retailersIsLoading ? (
         <div>
           <RetailerTable
             data={searchedData}

@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { connect } from "react-redux";
-import { getBrand, deleteBrand, editBrand, getManufacturers, getBrands } from "../../store/manufacturersBrands/action";
-import { setSortedValue, setSearchValue } from "../../store/filters/action";
 import { withRouter } from "react-router-dom";
+import Loader from "../../components/Loader/Loader";
 import qs from "query-string";
 import moment from "moment";
 import { Popconfirm, Button, Tabs } from "antd";
-// import ModalFrom from '../ModalFrom/ModalFrom'
 import styled from "styled-components";
 import CoreForm from "../ModalFrom/CoreForm";
-
-import BrandsTable from "../BrandTables/BrandsTable";
-import ProductsTable from "../BrandTables/ProductsTable";
+import BrandsTable from "components/Tables/BrandsTable";
+import { brandsEditInputs } from "../../utils/FormInputs/BrandFormInputs";
+import { useGetSingleBrand, useGetAllBrands, useUpdateBrand, useDeleteBrand } from "../../Requests/BrandRequest";
+import { useGetAllManufacturers } from "../../Requests/ManufacturerRequest";
 
 const Styles = styled.div`
   .check-item {
@@ -35,59 +33,31 @@ const Styles = styled.div`
   }
 `;
 
-const BrandDesc = ({
-  getManufacturers,
-  getBrands,
-  getBrand,
-  deleteBrand,
-  editBrand,
-  setSortedValue,
-  setSearchValue,
-  status,
-  brand: { createdAt, updatedAt, name, id, checkList, coreProducts, manufacturerId, brandId, manufacture, child, color },
-  history,
-  match: { params },
-}) => {
+const BrandDesc = ({ history, match: { params } }) => {
   const { TabPane } = Tabs;
+  const { isLoading: brandIsLoading, data: brandData } = useGetSingleBrand(params.id);
+  const { mutate: updateBrand } = useUpdateBrand("single");
+  const { mutate: deleteBrand } = useDeleteBrand("brandDes", history);
 
-  const inputData = [
-    { label: "Name", name: "name", type: "text", required: true },
-    { label: "Colour", name: "color", type: "text", required: true },
-  ];
-
-  const selectData = [
-    {
-      name: "manufacturerId",
-      value: "id",
-      option: "name",
-      action: getManufacturers,
-      store: "manufacturers",
-      lable: "Change manufacturer",
-      required: false,
-      mode: false,
-    },
-    {
-      name: "brandId",
-      value: "id",
-      option: "name",
-      action: getBrands,
-      store: "brands",
-      lable: "Change brand",
-      required: false,
-      mode: false,
-      brandSelect: true,
-    },
-  ];
+  const { isLoading: brandsIsLoading, data: brandsData } = useGetAllBrands();
+  const { isLoading: manufacturerIsLoading, data: manufacturerData } = useGetAllManufacturers();
+  const [inputs, setInputs] = useState(null);
+  useEffect(() => {
+    if (!manufacturerIsLoading && !brandsIsLoading) {
+      setInputs(brandsEditInputs(manufacturerData?.manufacturers, brandsData?.brands));
+    }
+  }, [manufacturerIsLoading, brandsIsLoading, manufacturerData, brandsData]);
 
   const initialValue = {
-    name,
-    manufacturerId,
-    brandId,
-    color,
+    id: params.id,
+    name: brandData?.brand?.name,
+    manufacturerId: brandData?.brand?.manufacturerId,
+    brandId: brandData?.brand?.brandId,
+    color: brandData?.brand?.color,
   };
 
   const divStyle = {
-    color: color,
+    color: brandData?.brand?.color,
   };
 
   const [queryParams, setQueryParams] = useState(qs.parse(params.param));
@@ -97,19 +67,13 @@ const BrandDesc = ({
     history.replace(`/brand/${params.id}/${params.tab}/${queryString}`);
   }, [queryParams, history, params.id, params.tab]);
 
-  useEffect(() => {
-    getBrand(params.id);
-  }, [getBrand, params.id]);
-
   const handleDelete = (id) => {
-    deleteBrand(id)
-      .then(() => history.push("/brands/page=0&perPage=10"))
-      .catch((e) => console.log("error", e));
+    deleteBrand(id);
   };
-
   const onFinishEdit = (values) => {
-    console.log(values);
-    editBrand(values, id);
+    const id = values.id;
+    delete values["id"];
+    updateBrand({ id, values });
   };
 
   const setPage = (page) => {
@@ -132,9 +96,6 @@ const BrandDesc = ({
 
   const callback = (key) => {
     history.replace(`/brand/${params.id}/${key}/page=0&perPage=10`);
-    setSortedValue(key);
-    setSearchValue("");
-
     setQueryParams((queryParams) => {
       return {
         ...queryParams,
@@ -149,98 +110,81 @@ const BrandDesc = ({
         Go Back
       </Button>
       <div className="item-title">Brand Details</div>
-      <div className="item-wrapper">
-        <div className="description-box">
-          <div className="title-item-desc">
-            Created At: <span>{moment(createdAt).format("MMMM Do YYYY, h:mm")}</span>
-          </div>
-          <div className="title-item-desc">
-            Updated At: <span>{moment(updatedAt).format("MMMM Do YYYY, h:mm")}</span>
-          </div>
-          <div className="title-item-desc">
-            Colour: <span style={divStyle}>{color}</span>
-          </div>
-          <div className="title-item-desc">
-            Name: <span>{name}</span>
-          </div>
-          {manufacture && (
-            <div className="title-item-desc">
-              Manufacture: <span>{manufacture.name}</span>
+      {inputs && !brandIsLoading && !brandsIsLoading && !manufacturerIsLoading ? (
+        <>
+          <div className="item-wrapper">
+            <div className="description-box">
+              <div className="title-item-desc">
+                Created At: <span>{moment(brandData?.brand?.createdAt).format("MMMM Do YYYY, h:mm")}</span>
+              </div>
+              <div className="title-item-desc">
+                Updated At: <span>{moment(brandData?.brand?.updatedAt).format("MMMM Do YYYY, h:mm")}</span>
+              </div>
+              <div className="title-item-desc">
+                Colour: <span style={divStyle}>{brandData?.brand?.color}</span>
+              </div>
+              <div className="title-item-desc">
+                Name: <span>{brandData?.brand?.name}</span>
+              </div>
+              {brandData?.brand?.manufacture && (
+                <div className="title-item-desc">
+                  Manufacture: <span>{brandData?.brand?.manufacture?.name}</span>
+                </div>
+              )}
             </div>
-          )}
-          {/* { checkList && checkList.length ?
-                        <div className="title-item-desc">
-                            CheckList:
-                            { checkList.map((item, index) =>
-                                <span key={index} className="check-item">{item}</span>
-                            )}
-                        </div> : null } */}
-        </div>
-        <div className="controls-box">
-          <Popconfirm
-            onConfirm={() => handleDelete(id)}
-            title={`Are you sure you want to delete brand ${name}？`}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button type="primary" danger>
-              Delete
-            </Button>
-          </Popconfirm>
+            <div className="controls-box">
+              <Popconfirm
+                onConfirm={() => handleDelete(params.id)}
+                title={`Are you sure you want to delete brand ${brandData?.brand?.name}？`}
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button type="primary" danger>
+                  Delete
+                </Button>
+              </Popconfirm>
 
-          <CoreForm
-            title={"Edit Brand"}
-            initialValue={initialValue}
-            selectData={selectData}
-            inputData={inputData}
-            brandSelect={true}
-            onSendForm={onFinishEdit}
-          />
+              <CoreForm
+                title={"Edit Brand"}
+                initialValue={initialValue}
+                selectData={inputs.selectData}
+                inputData={inputs.inputData}
+                brandSelect={true}
+                onSendForm={onFinishEdit}
+              />
+            </div>
+          </div>
 
-          {/* <ModalFrom
-                        text={"Edit Brand"}
-                        name={"name"}
-                        initialValue={name}
-                        isSelect={true}
-                        isDynamicForm={true}
-                        postPatam={selectData}
-                        initialId={manufacturerId}
-                        checkList={checkList}
-                        onFinish={onFinishEdit}
-                    /> */}
-        </div>
-      </div>
-
-      <Tabs defaultActiveKey={params.tab} onChange={callback}>
-        <TabPane tab="Child Brands" key="brand" disabled={child && child.length === 0}>
-          <BrandsTable
-            status={status}
-            dataTable={child}
-            setPage={setPage}
-            setPerPage={setPerPage}
-            page={queryParams.page}
-            perPage={queryParams.perPage}
-          />
-        </TabPane>
-        <TabPane tab="Core Products" key="coreProduct" disabled={coreProducts && coreProducts.length === 0}>
-          <ProductsTable
-            status={status}
-            dataTable={coreProducts}
-            setPage={setPage}
-            setPerPage={setPerPage}
-            page={queryParams.page}
-            perPage={queryParams.perPage}
-          />
-        </TabPane>
-      </Tabs>
+          <Tabs defaultActiveKey={params.tab} onChange={callback}>
+            <TabPane tab="Child Brands" key="brand" disabled={brandData?.brand?.child.length > 0 ? false : true}>
+              <BrandsTable
+                data={brandData?.brand?.child}
+                page={Number(queryParams.page)}
+                perPage={Number(queryParams.perPage)}
+                setPage={setPage}
+                setPerPage={setPerPage}
+                onFinishEdit={() => {
+                  console.log("");
+                }}
+              />
+            </TabPane>
+            {/* <TabPane tab="Core Products" key="coreProduct" disabled={coreProducts && coreProducts.length === 0}>
+              <ProductsTable
+                status={status}
+                dataTable={coreProducts}
+                setPage={setPage}
+                setPerPage={setPerPage}
+                page={queryParams.page}
+                perPage={queryParams.perPage}
+              />
+            </TabPane> */}
+          </Tabs>
+        </>
+      ) : (
+        <Loader />
+      )}
     </Styles>
   );
 };
 
-export default connect(
-  (state) => ({
-    brand: state.manufacturersBrands.brand,
-    status: state.manufacturersBrands.status,
-  }),
-  { getBrands, getBrand, deleteBrand, editBrand, getManufacturers, setSortedValue, setSearchValue }
-)(withRouter(BrandDesc));
+export default withRouter(BrandDesc);

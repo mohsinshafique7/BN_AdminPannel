@@ -5,9 +5,8 @@ import qs from "query-string";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
 import CoreForm from "../ModalFrom/CoreForm";
-import { notification } from "antd";
 import ManufacturersTable from "components/Tables/ManufacturersTable";
-import { manufacturerCreateInputs } from "../../utils/FormInputs";
+import { manufacturerCreateInputs } from "../../utils/FormInputs/ManufacturerFormInputs";
 import { useGetAllManufacturers, useCreateManufacturer, useUpdateManufacturer } from "../../Requests/ManufacturerRequest";
 import { useGetAllBrands } from "../../Requests/BrandRequest";
 const ManufacturersList = (props) => {
@@ -15,10 +14,10 @@ const ManufacturersList = (props) => {
     match: { params },
     history,
   } = props;
-  const { isLoading: brandsIsLoading, data: brandsData } = useGetAllBrands();
-  const { isLoading: manufacturerIsLoading, data: manufacturerData } = useGetAllManufacturers();
-  const { mutate: createManufacturer, isError: createManufacturerIsError } = useCreateManufacturer();
-  const { mutate: updateManufacturer, isError: updateManufacturerIsError } = useUpdateManufacturer();
+  const { isLoading: brandsIsLoading, data: brandsData, status: brandsStatus } = useGetAllBrands();
+  const { isLoading: manufacturerIsLoading, data: manufacturerData, status: manufacturersStatus } = useGetAllManufacturers();
+  const { mutate: createManufacturer } = useCreateManufacturer();
+  const { mutate: updateManufacturer } = useUpdateManufacturer("list");
 
   const [formInputs, setFormInputs] = useState(null);
   useEffect(() => {
@@ -42,13 +41,6 @@ const ManufacturersList = (props) => {
   const onSendForm = (values) => {
     const { name, brands, color } = values;
     createManufacturer({ manufacturer: { name, color }, brands });
-  };
-
-  const openNotification = (type) => {
-    notification[type]({
-      message: "Error",
-      description: "This manufacturer already exists.",
-    });
   };
 
   const searchedData = useMemo(() => {
@@ -77,11 +69,12 @@ const ManufacturersList = (props) => {
     const { name, color, id } = values;
     updateManufacturer({ manufacturer: { manufacturer: { name, color } }, id });
   }
+
   return (
     <>
       <div className="item-title">Manufacturers</div>
       <Search />
-      {formInputs && !manufacturerIsLoading ? (
+      {manufacturersStatus === "success" && brandsStatus === "success" && formInputs && !manufacturerIsLoading ? (
         <>
           <CoreForm
             title={"Create  Manufacturer"}

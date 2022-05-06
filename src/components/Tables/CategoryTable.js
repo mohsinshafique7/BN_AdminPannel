@@ -7,7 +7,9 @@ import moment from "moment";
 import styled from "styled-components";
 import CoreForm from "components/ModalFrom/CoreForm";
 import { useGetAllCategories } from "../../Requests/CategoryRequest";
-import { categoryEditInput, setColor, renderTableData, getFilter } from "../../utils/FormInputs";
+import { setColor, renderTableData, getFilter } from "../../utils/helpers";
+import { categoryEditInput } from "../../utils/FormInputs/CategoryFormInputs";
+
 export const Styles = styled.div`
   margin-top: 15px;
 
@@ -17,7 +19,7 @@ export const Styles = styled.div`
     margin-top: 25px;
   }
 `;
-const CategoryTable = ({ changeSubscription, data, page, perPage, setPage, setPerPage, handleCategoryEdit }) => {
+const CategoryTable = ({ changeSubscription, data, page, perPage, setPage, setPerPage, handleCategoryEdit, showEdit = true }) => {
   // const formInputs = categoryEditInput();
   const { isLoading: categoriesIsLoading, data: categoriesData } = useGetAllCategories();
   const [formInputs, setFormInputs] = useState(null);
@@ -51,12 +53,14 @@ const CategoryTable = ({ changeSubscription, data, page, perPage, setPage, setPe
   const onChangeSize = (page, pageSize) => {
     setPerPage(pageSize);
   };
+
   const columns = [
     {
       title: "Edit",
-      dataIndex: "editUser",
-      key: "editUser",
+      dataIndex: "edit",
+      key: "edit",
       width: "5%",
+      visible: false,
       render: (_, record) =>
         !categoriesIsLoading && formInputs ? (
           <CoreForm
@@ -184,7 +188,14 @@ const CategoryTable = ({ changeSubscription, data, page, perPage, setPage, setPe
       render: (text) => moment(text).format("YYYY-MM-DD hh:mm"),
       filterIcon: (filtered) => <FilterFilled style={{ color: filtered ? "#1890ff" : undefined }} />,
     },
-  ];
+  ].filter((item) => {
+    if (!showEdit) {
+      return item.key !== "edit";
+    } else {
+      return true;
+    }
+  });
+
   return (
     <Styles>
       <Table dataSource={renderData} columns={columns} pagination={false} />

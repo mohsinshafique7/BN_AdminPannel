@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import { logOut } from "../../store/auth/action";
 import { Avatar } from "antd";
 import { UserOutlined } from "@ant-design/icons";
+import { useSelector } from "react-redux";
 export const Styles = styled.div`
   .ant-layout-header {
     display: flex;
@@ -15,15 +16,19 @@ export const Styles = styled.div`
 `;
 
 const Header = (props) => {
+  const state = useSelector((state) => state?.auth?.user);
+  console.log("Satte", state);
   const { Header } = Layout;
 
   return (
     <Styles>
       <Header className="site-layout-background">
-        <Avatar size={40} icon={<UserOutlined />} />
-        <Button type="primary" onClick={() => props.logOut()}>
-          Log Out
-        </Button>
+        <div>
+          <Button type="primary" onClick={() => props.logOut()}>
+            Log Out
+          </Button>
+          <Avatar style={{ marginLeft: "10px" }} size={40} src={state?.avatar} alt={<UserOutlined />} />
+        </div>
       </Header>
     </Styles>
   );

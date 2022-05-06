@@ -1,49 +1,37 @@
 import React, { useEffect } from "react";
-import { connect, useDispatch, useSelector } from "react-redux";
-import { getRetailer, deleteRetailer, editRetailer } from "../../store/retailers/action";
 import { withRouter } from "react-router-dom";
 import moment from "moment";
 import { Popconfirm, Button } from "antd";
 import CoreForm from "../ModalFrom/CoreForm";
+import { retailerEditInput } from "../../utils/FormInputs/RetailerFormInputs";
+import { useGetSingleRetailers, useUpdateRetailer, useDeleteRetailer } from "../../Requests/RetailerRequest";
+import Loader from "../../components/Loader/Loader";
+const RetailerDesc = ({ history, match: { params } }) => {
+  const { isLoading: retailerIsLoading, data: retailerData } = useGetSingleRetailers(params.id);
+  const { mutate: updateRetailer } = useUpdateRetailer("retailerDes");
+  const { mutate: deleteRetailer, status: retailerDeleteStatus } = useDeleteRetailer();
 
-const RetailerDesc = ({
-  //   getRetailer,
-  // deleteRetailer,
-  // editRetailer,
-  // retailer: { createdAt, updatedAt, name, id, color },
-  history,
-  match: { params },
-}) => {
-  const { retailer } = useSelector((state) => {
-    return { retailer: state.retailers.retailer };
-  });
-
-  const { createdAt, updatedAt, name, id, color } = retailer;
-  const dispatch = useDispatch();
-
-  const inputData = [{ label: "Colour", name: "color", type: "text", required: true }];
+  const inputData = retailerEditInput();
 
   const initialValue = {
-    color,
+    id: params.id,
+    color: retailerData?.retailer?.color,
   };
-
   useEffect(() => {
-    dispatch(getRetailer(params.id));
-  }, [dispatch, params.id]);
-
-  const handleDelete = (id) => {
-    dispatch(deleteRetailer(id)).then(() => {
+    if (retailerDeleteStatus === "success") {
       history.push("/retailers/page=0&perPage=10");
-    });
+    }
+  }, [retailerDeleteStatus, history]);
+  const handleDelete = () => {
+    deleteRetailer(params.id);
   };
   const divStyle = {
-    color: color,
+    color: retailerData?.retailer?.color,
   };
 
   const onSendForm = (values) => {
-    dispatch(editRetailer(values, id)).then(() => {
-      dispatch(getRetailer(params.id));
-    });
+    const { id, color } = values;
+    updateRetailer({ id, color });
   };
 
   return (
@@ -52,35 +40,39 @@ const RetailerDesc = ({
         Go Back
       </Button>
       <div className="item-title">Retailer Description</div>
-      <div className="item-wrapper">
-        <div className="description-box">
-          <div className="title-item-desc">
-            Created At: <span>{moment(createdAt).format("MMMM Do YYYY, h:mm")}</span>
+      {!retailerIsLoading ? (
+        <div className="item-wrapper">
+          <div className="description-box">
+            <div className="title-item-desc">
+              Created At: <span>{moment(retailerData?.retailer?.createdAt).format("MMMM Do YYYY, h:mm")}</span>
+            </div>
+            <div className="title-item-desc">
+              Updated At: <span>{moment(retailerData?.retailer?.updatedAt).format("MMMM Do YYYY, h:mm")}</span>
+            </div>
+            <div className="title-item-desc">
+              Colour: <span style={divStyle}>{retailerData?.retailer?.color}</span>
+            </div>
+            <div className="title-item-desc">
+              Name: <span>{retailerData?.retailer?.name}</span>
+            </div>
           </div>
-          <div className="title-item-desc">
-            Updated At: <span>{moment(updatedAt).format("MMMM Do YYYY, h:mm")}</span>
-          </div>
-          <div className="title-item-desc">
-            Colour: <span style={divStyle}>{color}</span>
-          </div>
-          <div className="title-item-desc">
-            Name: <span>{name}</span>
+          <div className="controls-box">
+            <Popconfirm
+              onConfirm={() => handleDelete(params.id)}
+              title={`Are you sure you want to delete retailer ${retailerData?.retailer?.name}？`}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="primary" danger>
+                Delete
+              </Button>
+            </Popconfirm>
+            <CoreForm title={"Edit Color"} initialValue={initialValue} inputData={inputData} onSendForm={onSendForm} />
           </div>
         </div>
-        <div className="controls-box">
-          <Popconfirm
-            onConfirm={() => handleDelete(id)}
-            title={`Are you sure you want to delete retailer ${name}？`}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button type="primary" danger>
-              Delete
-            </Button>
-          </Popconfirm>
-          <CoreForm title={"Edit Color"} initialValue={initialValue} inputData={inputData} onSendForm={onSendForm} />
-        </div>
-      </div>
+      ) : (
+        <Loader />
+      )}
     </>
   );
 };

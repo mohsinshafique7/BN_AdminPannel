@@ -1,113 +1,55 @@
 import React, { useState, useEffect } from "react";
-import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import { Popconfirm, Tooltip, Button, Input, Popover } from "antd";
 import { HexColorPicker } from "react-colorful";
 import Search from "../Search/Search";
-import {
-  getProductGroup,
-  deleteProductGroup,
-  editProductGroup,
-  removeProductGroupCores,
-  addProductGroupCores,
-} from "../../store/productGroups/action";
-import { useSelector } from "react-redux";
-import { getUsers } from "../../store/users/action";
-import { getCompanies } from "../../store/companies/action";
-import {
-  getCoreProducts,
-  // setSelectCoreProducts
-} from "../../store/coreProducts/action";
-
 import CoreForm from "../ModalFrom/CoreForm";
 import Loader from "../Loader/Loader";
-
-import { STATE_STATUSES } from "../../utils/app";
 import { EditOutlined, CloseOutlined, CheckOutlined } from "@ant-design/icons";
 import ProductGroupCoreProduct from "components/Tables/ProductGroupCoreProduct";
+import { useGetSingleCustomGroups, useUpdateCustomGroup, useDeleteCustomGroup } from "../../Requests/CustomGroupRequest";
+import { useGetAllCompanies } from "../../Requests/CompanyRequest";
+import { useGetAllUsers } from "../../Requests/UsersRequest";
+import { CustomGroupEditInput } from "../../utils/FormInputs/CustomGroupFormInputs";
+const ProductGroupsDesc = ({ history, match: { params } }) => {
+  const { isLoading: singleCustomGroupsIsLoading, data: singleCustomGroupsData, refetch } = useGetSingleCustomGroups(params.id);
+  const { isLoading: companiesIsLoading, data: companiesData } = useGetAllCompanies();
+  const { isLoading: usersIsLoading, data: usersData } = useGetAllUsers();
 
-const ProductGroupsDesc = ({
-  removeProductGroupCores,
-  getProductGroup,
-  deleteProductGroup,
-  editProductGroup,
-  getCompanies,
-  getUsers,
-  // status,
-  // productGroup: { name, id, coreProduct, user, company, color },
-  history,
-  match: { params },
-}) => {
-  const { productGroup, status, searchValue } = useSelector((state) => {
-    return {
-      searchValue: state.filters.searchValue,
-      productGroup: state.productGroups.productGroup,
-      status: state.productGroups.status,
-    };
-  });
+  const { mutate: updateCustomGroup } = useUpdateCustomGroup();
+  const { mutate: deleteCustomGroup, status: deleteCustomGroupStatus } = useDeleteCustomGroup();
 
-  const { name, id, coreProduct, user, company, color } = productGroup;
-  const inputData = [{ label: "Name", name: "name", type: "text", required: true }];
+  // const { searchValue } = useSelector((state) => {
+  //   return {
+  //     searchValue: state.filters.searchValue,
+  //   };
+  // });
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+  const [inputs, setInputs] = useState(null);
+  useEffect(() => {
+    if (!companiesIsLoading && !usersIsLoading) {
+      setInputs(CustomGroupEditInput(usersData?.users, companiesData?.companies));
+    }
+  }, [companiesIsLoading, usersIsLoading, usersData, companiesData]);
 
-  const selectData = [
-    { name: "userId", value: "id", option: "email", action: getUsers, store: "users", lable: "User", required: false, mode: false },
-    {
-      name: "companyId",
-      value: "id",
-      option: "name",
-      action: getCompanies,
-      store: "companies",
-      lable: "Company",
-      required: false,
-      mode: false,
-    },
-  ];
-
-  const [inintialColor, setInintialColor] = useState(color);
+  const [inintialColor, setInintialColor] = useState(singleCustomGroupsData?.productGroup?.color);
   const [editColor, setEditColor] = useState(false);
   const [visibleColors, setVisibleColors] = useState(false);
 
   useEffect(() => {
-    setInintialColor(color);
-  }, [color]);
-
-  // const onSearch = (data) =>
-  //   data.filter((item) => {
-  //     if (searchValue) {
-  //       return item["title"].toLowerCase().includes(searchValue.toLowerCase());
-  //     }
-  //     return item;
-  //   });
-
-  // const limit = page * perPage + perPage < onSearch(coreProduct).length ? page * perPage + perPage : onSearch(coreProduct).length;
-
-  // const renderData = onSearch(coreProduct).slice(page * perPage, limit);
-
-  // const onChangePage = (page, pageSize) => {
-  //   setPage(page - 1);
-  // };
-
-  // const onChangePerPage = (page, pageSize) => {
-  //   setPerPage(pageSize);
-  // };
-
-  const initialValueDefine = () => {
-    if (name && user && company) {
-      return { name, userId: user.id, companyId: company.id };
-    } else if (id && user && !company) {
-      return { name, userId: user.id };
-    } else if (name && !user && company) {
-      return { name, companyId: company.id };
-    } else {
-      return { name };
+    if (!singleCustomGroupsIsLoading) {
+      setInintialColor(singleCustomGroupsData?.productGroup?.color);
     }
+  }, [singleCustomGroupsData, singleCustomGroupsIsLoading]);
+
+  const initialValue = {
+    id: params.id,
+    name: singleCustomGroupsData?.productGroup?.name,
+    userId: singleCustomGroupsData?.productGroup?.user?.id,
+    companyId: singleCustomGroupsData?.productGroup?.company?.id,
   };
-
-  const initialValue = initialValueDefine();
-
-  useEffect(() => {
-    getProductGroup(params.id);
-  }, [getProductGroup, params.id]);
 
   const handleColorPicker = (color) => {
     setInintialColor(color);
@@ -117,18 +59,26 @@ const ProductGroupsDesc = ({
     const { value } = e.target;
     setInintialColor(value);
   };
-
+  const removeProductGroupCores = (values) => {
+    console.log("Need to be fixed");
+  };
   const handleEditColor = () => {
-    editProductGroup({ color: inintialColor }, id);
+    updateCustomGroup({ values: { color: inintialColor }, id: params.id });
     setEditColor(false);
   };
 
-  const handleDelete = (id) => {
-    deleteProductGroup(id).then(() => history.push("/product-groups/page=0&perPage=10"));
+  const handleDelete = () => {
+    deleteCustomGroup(params.id);
   };
+  useEffect(() => {
+    if (deleteCustomGroupStatus === "success") {
+      history.push("/product-groups/page=0&perPage=10");
+    }
+  }, [deleteCustomGroupStatus, history]);
 
   const onSendForm = (values) => {
-    editProductGroup(values, id);
+    delete values["id"];
+    updateCustomGroup({ values, id: params.id });
   };
 
   return (
@@ -138,11 +88,11 @@ const ProductGroupsDesc = ({
       </Button>
       <div className="item-title">Product Groups Details</div>
       <div className="item-wrapper">
-        {status === STATE_STATUSES.READY ? (
+        {inputs && !singleCustomGroupsIsLoading ? (
           <>
             <div className="description-box">
               <div className="title-item-desc">
-                Name: <span>{name}</span>
+                Name: <span>{singleCustomGroupsData?.productGroup?.name}</span>
               </div>
               <div className="title-item-desc">
                 Color:
@@ -177,58 +127,30 @@ const ProductGroupsDesc = ({
                 )}
               </div>
               <div className="title-item-desc">
-                User: <span>{user ? user.email : "-"}</span>
+                User: <span>{singleCustomGroupsData?.productGroup?.user ? singleCustomGroupsData?.productGroup?.user.email : "-"}</span>
               </div>
               <div className="title-item-desc">
-                Company: <span>{company ? company.name : "-"}</span>
+                Company:{" "}
+                <span>{singleCustomGroupsData?.productGroup?.company ? singleCustomGroupsData?.productGroup?.company.name : "-"}</span>
               </div>
 
               <div className="title-item-desc">Core Products:</div>
-              {coreProduct.length ? (
-                <Search />
-              ) : // <Input
-              //   style={{ marginBottom: "15px" }}
-              //   placeholder="Search"
-              //   value={searchValue}
-              //   onChange={(e) => setSearchValue(e.target.value)}
-              // />
-              null}
-              <ProductGroupCoreProduct data={productGroup.coreProduct} removeProductGroupCores={removeProductGroupCores} />
-              {/* {renderData && renderData.length ? (
+              {singleCustomGroupsData?.productGroup?.coreProduct.length ? (
                 <>
-                  <div className="desc-core-product">
-                    {renderData.map((product) => (
-                      <Popconfirm
-                        key={product.id}
-                        onConfirm={() => removeProductGroupCores({ coreProducts: [product.id] }, id)}
-                        title={`Are you sure you want to delete core product ${product.title}？`}
-                        okText="Yes"
-                        cancelText="No"
-                      >
-                        <div className="item-core-product">
-                          <DeleteOutlined />
-                          <span>{product.title}</span>
-                        </div>
-                      </Popconfirm>
-                    ))}
-                  </div>
-                  <Pagination
-                    className="pagination-controls"
-                    total={onSearch(coreProduct).length}
-                    pageSize={perPage}
-                    current={page + 1}
-                    onChange={onChangePage}
-                    onShowSizeChange={onChangePerPage}
+                  <Search />
+                  <ProductGroupCoreProduct
+                    data={singleCustomGroupsData?.productGroup?.coreProduct}
+                    removeProductGroupCores={removeProductGroupCores}
                   />
                 </>
               ) : (
-                <Empty />
-              )} */}
+                <Loader />
+              )}
             </div>
             <div className="controls-box">
               <Popconfirm
-                onConfirm={() => handleDelete(id)}
-                title={`Are you sure you want to delete group product ${name}？`}
+                onConfirm={() => handleDelete(params.id)}
+                title={`Are you sure you want to delete group product ${singleCustomGroupsData?.productGroup?.name}？`}
                 okText="Yes"
                 cancelText="No"
               >
@@ -239,8 +161,8 @@ const ProductGroupsDesc = ({
               <CoreForm
                 title={"Edit Product Groups"}
                 initialValue={initialValue}
-                inputData={inputData}
-                selectData={selectData}
+                inputData={inputs.inputData}
+                selectData={inputs.selectData}
                 onSendForm={onSendForm}
               />
 
@@ -257,13 +179,4 @@ const ProductGroupsDesc = ({
   );
 };
 
-export default connect(null, {
-  removeProductGroupCores,
-  addProductGroupCores,
-  getCoreProducts,
-  getUsers,
-  getCompanies,
-  getProductGroup,
-  deleteProductGroup,
-  editProductGroup,
-})(withRouter(ProductGroupsDesc));
+export default withRouter(ProductGroupsDesc);

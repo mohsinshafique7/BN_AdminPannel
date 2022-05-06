@@ -26,8 +26,9 @@ const CoreProductsList = (props) => {
   const { isLoading: categoriesIsLoading, data: categoriesData } = useGetAllCategories();
   const { isLoading: manufacturerIsLoading, data: manufacturerData } = useGetAllManufacturers();
   const [coreImage, setCoreImage] = useState("");
-  const { isLoading: coreProductsIsLoading, data: coreProductsData } = useGetAllCoreProducts(queryParams);
-  const { mutate: updateCoreProduct, isError: updateCoreProductIsError } = useUpdateCoreProduct();
+  const { isLoading: coreProductsIsLoading, data: coreProductsData, status: coreProductsStatus } = useGetAllCoreProducts(queryParams);
+
+  const { mutate: updateCoreProduct } = useUpdateCoreProduct();
   const [selectData, setSelectData] = useState([]);
   const inputs = [
     { name: "title", type: "text", lable: "Title", placeholder: "Title" },
@@ -194,86 +195,84 @@ const CoreProductsList = (props) => {
 
   return (
     <CoreListStyles>
-      {selectData.length > 0 && !coreProductsIsLoading ? (
+      <div className="item-title">Core Products</div>
+
+      <div className="sorted-box">
+        <span className="title">Search:</span>
+      </div>
+
+      {inputs.map((item, index) => (
+        <div key={index} className="wrapper-form-item">
+          <div className="lable-item">{item.lable}</div>
+          <Input value={queryParams[item.name]} name={item.name} type={item.type} placeholder={item.placeholder} onChange={handleSearch} />
+        </div>
+      ))}
+
+      {selectData.length > 0 ? (
+        selectData.map((item, index) => (
+          <Multiselect
+            key={index}
+            store={item.store}
+            name={item.name}
+            lable={item.lable}
+            value={item.value}
+            option={item.option}
+            placeholder={item.placeholder}
+            initialValue={item.initialValue}
+            setSelectList={setSelectList}
+          />
+        ))
+      ) : (
+        <Loader />
+      )}
+
+      <div className="sorted-box">
+        <br />
+        <span className="title">Sort:</span>
+        <Radio.Group value={queryParams.order} onChange={handleToggleOrder}>
+          <Radio.Button value="title">Title</Radio.Button>
+          <Radio.Button value="category">Category</Radio.Button>
+          <Radio.Button value="productBrand">Brand</Radio.Button>
+          <Radio.Button value="createdAt">Date</Radio.Button>
+        </Radio.Group>
+        <Checkbox checked={queryParams.direction === "DESC"} onChange={handleReverseChange}>
+          Reverse Order
+        </Checkbox>
+      </div>
+
+      <div className="filter-wrapper">
+        <div className="filter-box">
+          <p>Filter:</p>
+          <RangePicker value={dateInterval} onChange={(date, dateString) => getSelectDate(date, dateString)} />
+        </div>
+
+        <div className="filter-box">
+          <p>No Category</p>
+          <Switch checked={JSON.parse(queryParams.noCategory)} name="noCategory" onChange={onChangeSwitch} />
+        </div>
+
+        <div className="filter-box">
+          <p>No Brand</p>
+          <Switch checked={JSON.parse(queryParams.noBrand)} name="noBrand" onChange={onChangeSwitch} />
+        </div>
+
+        <div className="filter-box">
+          <p>Invalid EAN</p>
+          <Switch checked={JSON.parse(queryParams.issues)} name="issues" onChange={onChangeSwitch} />
+        </div>
+
+        <div className="filter-box">
+          <p>Not reviewed</p>
+          <Switch checked={JSON.parse(queryParams.notReviewed)} name="notReviewed" onChange={onChangeSwitch} />
+        </div>
+
+        <div className="filter-box">
+          <p>Goto Page:</p>
+          <Input value={Number(queryParams.page)} name="page" type="number" min="1" onChange={handlePage} />
+        </div>
+      </div>
+      {coreProductsStatus === "success" && !coreProductsIsLoading ? (
         <>
-          <div className="item-title">Core Products</div>
-
-          <div className="sorted-box">
-            <span className="title">Search:</span>
-          </div>
-
-          {inputs.map((item, index) => (
-            <div key={index} className="wrapper-form-item">
-              <div className="lable-item">{item.lable}</div>
-              <Input
-                value={queryParams[item.name]}
-                name={item.name}
-                type={item.type}
-                placeholder={item.placeholder}
-                onChange={handleSearch}
-              />
-            </div>
-          ))}
-
-          {selectData.map((item, index) => (
-            <Multiselect
-              key={index}
-              store={item.store}
-              name={item.name}
-              lable={item.lable}
-              value={item.value}
-              option={item.option}
-              placeholder={item.placeholder}
-              initialValue={item.initialValue}
-              setSelectList={setSelectList}
-            />
-          ))}
-
-          <div className="sorted-box">
-            <br />
-            <span className="title">Sort:</span>
-            <Radio.Group value={queryParams.order} onChange={handleToggleOrder}>
-              <Radio.Button value="title">Title</Radio.Button>
-              <Radio.Button value="category">Category</Radio.Button>
-              <Radio.Button value="productBrand">Brand</Radio.Button>
-              <Radio.Button value="createdAt">Date</Radio.Button>
-            </Radio.Group>
-            <Checkbox checked={queryParams.direction === "DESC"} onChange={handleReverseChange}>
-              Reverse Order
-            </Checkbox>
-          </div>
-
-          <div className="filter-wrapper">
-            <div className="filter-box">
-              <p>Filter:</p>
-              <RangePicker value={dateInterval} onChange={(date, dateString) => getSelectDate(date, dateString)} />
-            </div>
-
-            <div className="filter-box">
-              <p>No Category</p>
-              <Switch checked={JSON.parse(queryParams.noCategory)} name="noCategory" onChange={onChangeSwitch} />
-            </div>
-
-            <div className="filter-box">
-              <p>No Brand</p>
-              <Switch checked={JSON.parse(queryParams.noBrand)} name="noBrand" onChange={onChangeSwitch} />
-            </div>
-
-            <div className="filter-box">
-              <p>Invalid EAN</p>
-              <Switch checked={JSON.parse(queryParams.issues)} name="issues" onChange={onChangeSwitch} />
-            </div>
-
-            <div className="filter-box">
-              <p>Not reviewed</p>
-              <Switch checked={JSON.parse(queryParams.notReviewed)} name="notReviewed" onChange={onChangeSwitch} />
-            </div>
-
-            <div className="filter-box">
-              <p>Goto Page:</p>
-              <Input value={Number(queryParams.page)} name="page" type="number" min="1" onChange={handlePage} />
-            </div>
-          </div>
           <div className="table-wrapper-box">
             <CoreProductsTable
               data={coreProductsData?.cores?.rows}
@@ -285,6 +284,8 @@ const CoreProductsList = (props) => {
               onSendForm={onSendForm}
               handleCoreProductEdit={onSendForm}
               setCoreImage={setCoreImage}
+              // isMerge = {isMerge}
+              // handleMergeProduct={handleMergeProduct}
             />
           </div>
         </>

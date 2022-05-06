@@ -1,18 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { connect } from "react-redux";
-import {
-  getCompany,
-  getCompanyCategories,
-  deleteCompany,
-  editCompany,
-  editCompanyManufacturer,
-  editCompanyReatailer,
-  editCompanySourceCategory,
-} from "../../store/companies/action";
-import { getManufacturers } from "../../store/manufacturersBrands/action";
-import { setSortedValue, setSearchValue } from "../../store/filters/action";
-import { getRetailers } from "../../store/retailers/action";
-import { getSourceCategories } from "../../store/sourceCategories/action";
+import Loader from "../../components/Loader/Loader";
 import { withRouter } from "react-router-dom";
 import qs from "query-string";
 import moment from "moment";
@@ -20,13 +7,21 @@ import { Tabs } from "antd";
 import { Popconfirm, Button } from "antd";
 import styled from "styled-components";
 import CoreForm from "../ModalFrom/CoreForm";
-
-import ManufacturerTable from "../CompanyTables/ManufacturerTable";
-import RetailerTable from "../CompanyTables/RetailerTable";
 import SubscriptionsTab from "../CompanyTables/SubscriptionsTab";
-import CategoriesTable from "components/CompanyTables/CategoriesTable";
 import SectionTab from "components/CompanyTables/SectionTab";
-
+import { useGetAllManufacturers } from "../../Requests/ManufacturerRequest";
+import { useGetAllRetailers } from "../../Requests/RetailerRequest";
+import {
+  useGetSingleCompany,
+  useGetCompanyCategories,
+  useUpdateCompany,
+  useUpdateCompanyManufacturers,
+  useUpdateCompanyRetailers,
+  useDeleteCompany,
+} from "../../Requests/CompanyRequest";
+import CompaniesTable from "components/Tables/CompaniesTable";
+import RetailerTable from "components/Tables/RetailerTable";
+import CategoryTable from "components/Tables/CategoryTable";
 const Styles = styled.div`
   .manufacture-item {
     font-size: 20px;
@@ -50,28 +45,17 @@ const Styles = styled.div`
   }
 `;
 
-const CompanyDesc = ({
-  getCompany,
-  editCompany,
-  getCompanyCategories,
-  deleteCompany,
-  editCompanyManufacturer,
-  editCompanyReatailer,
-  editCompanySourceCategory,
-  getManufacturers,
-  getRetailers,
-  getSourceCategories,
-  setSortedValue,
-  setSearchValue,
-  status,
-  company: { createdAt, updatedAt, name, id, manufacturer, retailer, sourceCategory, filtersStartDate },
-  categories,
-  companyCategories,
-  history,
-  match: { params },
-}) => {
+const CompanyDesc = ({ history, match: { params } }) => {
   const { TabPane } = Tabs;
+  const { data: manufacturerData } = useGetAllManufacturers();
+  const { data: retailersData } = useGetAllRetailers();
+  const { isLoading: companyCategoriesDataIsLoading, data: companyCategoriesData } = useGetCompanyCategories(params.id);
+  const { mutate: updateCompany } = useUpdateCompany("single");
+  const { mutate: updateCompanyManufacturer } = useUpdateCompanyManufacturers();
+  const { mutate: updateCompanyRetailer } = useUpdateCompanyRetailers();
+  const { mutate: deleteCompany } = useDeleteCompany(history);
 
+  const { isLoading: companyDataIsLoading, data: companyData } = useGetSingleCompany(params.id);
   const inputData = [{ label: "Name", name: "name", type: "text", required: true }];
   const selectDate = [{ label: "Start Date", name: "filtersStartDate" }];
 
@@ -80,8 +64,7 @@ const CompanyDesc = ({
       name: "manufacturers",
       value: "id",
       option: "name",
-      action: getManufacturers,
-      store: "manufacturers",
+      store: manufacturerData?.manufacturers,
       lable: "Change manufacturers",
       required: false,
       mode: "multiple",
@@ -93,34 +76,16 @@ const CompanyDesc = ({
       name: "retailers",
       value: "id",
       option: "name",
-      action: getRetailers,
-      store: "retailers",
+      store: retailersData?.retailers,
       lable: "Change retailers",
       required: false,
       mode: "multiple",
     },
   ];
 
-  const selectDataSourceCategory = [
-    {
-      name: "sourceCategories",
-      value: "id",
-      option: "name",
-      action: getSourceCategories,
-      store: "sourceCategory",
-      lable: "Change source categories",
-      required: false,
-      mode: "multiple",
-    },
-  ];
-
   const initialValue = {
-    name,
+    name: companyData?.company?.name,
   };
-
-  const [manufacturers, setManufacturers] = useState([]);
-  const [retailers, setRetailers] = useState([]);
-  const [sourceCategories, setSourceCategories] = useState([]);
 
   const [queryParams, setQueryParams] = useState(qs.parse(params.param));
 
@@ -129,70 +94,29 @@ const CompanyDesc = ({
     history.replace(`/company/${params.id}/${params.tab}/${queryString}`);
   }, [queryParams, history, params.id, params.tab]);
 
-  useEffect(() => {
-    getCompany(params.id);
-    getCompanyCategories(params.id);
-  }, [getCompany, params.id]);
-
-  useEffect(() => {
-    if (manufacturer && manufacturer.length) {
-      const ids = manufacturer.map((item) => item.id);
-
-      setManufacturers(ids);
-    } else {
-      setManufacturers([]);
-    }
-  }, [manufacturer]);
-
-  useEffect(() => {
-    if (retailer && retailer.length) {
-      const ids = retailer.map((item) => item.id);
-
-      setRetailers(ids);
-    } else {
-      setRetailers([]);
-    }
-  }, [retailer]);
-
-  useEffect(() => {
-    if (sourceCategory && sourceCategory.length) {
-      const ids = sourceCategory.map((item) => item.id);
-
-      setSourceCategories(ids);
-    } else {
-      setSourceCategories([]);
-    }
-  }, [sourceCategory]);
-
-  const handleDelete = (id) => {
-    deleteCompany(id).then(() => {
-      history.push("/companies/page=0&perPage=10");
-    });
+  const handleDelete = () => {
+    deleteCompany(params.id);
   };
 
   const onSendForm = (values) => {
-    editCompany(values, id);
+    updateCompany({ data: values, id: params.id });
   };
 
   const editManufacturer = (values) => {
     const { manufacturers } = values;
-    editCompanyManufacturer({ manufacturers }, id);
+    updateCompanyManufacturer({ data: { manufacturers }, id: params.id });
   };
 
   const editRetailer = (values) => {
     const { retailers } = values;
-    editCompanyReatailer({ retailers }, id);
+    updateCompanyRetailer({ data: { retailers }, id: params.id });
   };
 
   const editStartDate = (values) => {
     const filtersStartDate = !!values.filtersStartDate ? values.filtersStartDate.format("YYYY-MM-DD") : moment().format("YYYY-MM-DD");
-    values.filtersStartDate = filtersStartDate;
-    editCompany(values, id);
-  };
-
-  const editSourceCategory = (values) => {
-    const { sourceCategories } = values;
-    editCompanySourceCategory({ sourceCategories }, id);
+    console.log(filtersStartDate);
+    const data = { filtersStartDate };
+    updateCompany({ id: params.id, data });
   };
 
   const setPage = (page) => {
@@ -215,9 +139,6 @@ const CompanyDesc = ({
 
   const callback = (key) => {
     history.replace(`/company/${params.id}/${key}/page=0&perPage=10`);
-    setSortedValue(key);
-    setSearchValue("");
-
     setQueryParams((queryParams) => {
       return {
         ...queryParams,
@@ -228,119 +149,116 @@ const CompanyDesc = ({
 
   return (
     <Styles>
-      <div className="item-title">Company Details</div>
-      <div className="item-wrapper">
-        <div className="description-box">
-          <div className="title-item-desc">
-            Created At: <span>{moment(createdAt).format("MMMM Do YYYY, h:mm")}</span>
+      {!companyDataIsLoading && !companyCategoriesDataIsLoading ? (
+        <>
+          <div className="item-title">Company Details</div>
+          <div className="item-wrapper">
+            <div className="description-box">
+              <div className="title-item-desc">
+                Created At: <span>{moment(companyData?.company?.createdAt).format("MMMM Do YYYY, h:mm")}</span>
+              </div>
+              <div className="title-item-desc">
+                Updated At: <span>{moment(companyData?.company?.updatedAt).format("MMMM Do YYYY, h:mm")}</span>
+              </div>
+              <div className="title-item-desc">
+                Started Date:{" "}
+                <span>
+                  {companyData?.company?.filtersStartDate
+                    ? moment(companyData?.company?.filtersStartDate).format("MMMM Do YYYY")
+                    : "No Date"}
+                </span>
+              </div>
+              <div className="title-item-desc">
+                Name: <span>{companyData?.company?.name}</span>
+              </div>
+            </div>
+            <div className="controls-box">
+              <Popconfirm
+                onConfirm={() => handleDelete(params.id)}
+                title={`Are you sure you want to delete company ${companyData?.company?.name}？`}
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button type="primary" danger>
+                  Delete
+                </Button>
+              </Popconfirm>
+              <CoreForm title={"Edit Company Name"} initialValue={initialValue} inputData={inputData} onSendForm={onSendForm} />
+              <CoreForm
+                title={"Edit Manufacturer"}
+                // initialValue={{ manufacturers }}
+                selectData={selectDataManufacturer}
+                onSendForm={editManufacturer}
+              />
+              <CoreForm
+                title={"Edit Retailer"}
+                // initialValue={{ retailers }}
+                selectData={selectDataRetailer}
+                onSendForm={editRetailer}
+              />
+              <CoreForm
+                title={"Edit Start Date"}
+                initialValue={{
+                  filtersStartDate: companyData?.company?.filtersStartDate ? moment(companyData?.company?.filtersStartDate) : moment(),
+                }}
+                selectDate={selectDate}
+                onSendForm={editStartDate}
+              />
+            </div>
           </div>
-          <div className="title-item-desc">
-            Updated At: <span>{moment(updatedAt).format("MMMM Do YYYY, h:mm")}</span>
-          </div>
-          <div className="title-item-desc">
-            Started Date: <span>{filtersStartDate ? moment(filtersStartDate).format("MMMM Do YYYY") : "No Date"}</span>
-          </div>
-          <div className="title-item-desc">
-            Name: <span>{name}</span>
-          </div>
-        </div>
-        <div className="controls-box">
-          <Popconfirm
-            onConfirm={() => handleDelete(id)}
-            title={`Are you sure you want to delete company ${name}？`}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button type="primary" danger>
-              Delete
-            </Button>
-          </Popconfirm>
-          <CoreForm title={"Edit Company Name"} initialValue={initialValue} inputData={inputData} onSendForm={onSendForm} />
-          <CoreForm
-            title={"Edit Manufacturer"}
-            initialValue={{ manufacturers }}
-            selectData={selectDataManufacturer}
-            onSendForm={editManufacturer}
-          />
-          <CoreForm title={"Edit Retailer"} initialValue={{ retailers }} selectData={selectDataRetailer} onSendForm={editRetailer} />
-          <CoreForm
-            title={"Edit Start Date"}
-            initialValue={{ filtersStartDate: filtersStartDate ? moment(filtersStartDate) : moment() }}
-            selectDate={selectDate}
-            onSendForm={editStartDate}
-          />
-
-          {/* <CoreForm
-            title={"Edit Source Category"}
-            initialValue={{ sourceCategories }}
-            selectData={selectDataSourceCategory}
-            onSendForm={editSourceCategory}
-          /> */}
-        </div>
-      </div>
-
-      <Tabs defaultActiveKey={params.tab} onChange={callback}>
-        <TabPane tab="Subscriptions" key="subscriptions">
-          <SubscriptionsTab companyId={params.id} />
-        </TabPane>
-        <TabPane tab="Manufacturers" key="manufacturer" disabled={manufacturer && manufacturer.length === 0}>
-          <ManufacturerTable
-            status={status}
-            dataTable={manufacturer}
-            setPage={setPage}
-            setPerPage={setPerPage}
-            page={queryParams.page}
-            perPage={queryParams.perPage}
-          />
-        </TabPane>
-        <TabPane tab="Retailers" key="retailer" disabled={retailer && retailer.length === 0}>
-          <RetailerTable
-            status={status}
-            dataTable={retailer}
-            setPage={setPage}
-            setPerPage={setPerPage}
-            page={queryParams.page}
-            perPage={queryParams.perPage}
-          />
-        </TabPane>
-        <TabPane tab="Categories" key="categories" disabled={!categories.length && !companyCategories.length}>
-          <CategoriesTable
-            categories={categories}
-            companyCategories={companyCategories}
-            setPage={setPage}
-            setPerPage={setPerPage}
-            page={queryParams.page}
-            perPage={queryParams.perPage}
-            companyId={params.id}
-          />
-        </TabPane>
-        <TabPane tab="Section" key="section">
-          <SectionTab companyId={params.id} />
-        </TabPane>
-      </Tabs>
+          <Tabs defaultActiveKey={params.tab} onChange={callback}>
+            <TabPane tab="Subscriptions" key="subscriptions">
+              <SubscriptionsTab companyId={params.id} />
+            </TabPane>
+            <TabPane tab="Manufacturers" key="manufacturer" disabled={companyData?.company?.manufacturer.length === 0}>
+              <CompaniesTable
+                data={companyData?.company?.manufacturer}
+                page={Number(queryParams.page)}
+                perPage={Number(queryParams.perPage)}
+                setPage={setPage}
+                setPerPage={setPerPage}
+                handleEditCompany={() => {
+                  console.log("Not Editbale");
+                }}
+                showEdit={false}
+              />
+            </TabPane>
+            <TabPane tab="Retailers" key="retailer" disabled={companyData?.company?.retailer?.lenght === 0}>
+              <RetailerTable
+                data={companyData?.company?.retailer}
+                page={Number(queryParams.page)}
+                perPage={Number(queryParams.perPage)}
+                setPage={setPage}
+                setPerPage={setPerPage}
+                showEdit={false}
+              />
+            </TabPane>
+            <TabPane tab="Categories" key="categories" disabled={companyCategoriesData?.categories?.lenght === 0}>
+              <CategoryTable
+                data={companyCategoriesData?.categories}
+                page={Number(queryParams.page)}
+                perPage={Number(queryParams.perPage)}
+                setPage={setPage}
+                setPerPage={setPerPage}
+                changeSubscription={() => {
+                  console.log("Change Subscription");
+                }}
+                handleCategoryEdit={() => {
+                  console.log("Not Editable");
+                }}
+                showEdit={false}
+              />
+            </TabPane>
+            <TabPane tab="Section" key="section">
+              <SectionTab companyId={params.id} />
+            </TabPane>
+          </Tabs>
+        </>
+      ) : (
+        <Loader />
+      )}
     </Styles>
   );
 };
 
-export default connect(
-  (state) => ({
-    company: state.companies.company,
-    categories: state.companies.categories,
-    companyCategories: state.companies.companyCategories,
-    status: state.manufacturersBrands.status,
-  }),
-  {
-    getCompany,
-    deleteCompany,
-    editCompany,
-    editCompanyManufacturer,
-    editCompanyReatailer,
-    editCompanySourceCategory,
-    getManufacturers,
-    getRetailers,
-    getSourceCategories,
-    setSortedValue,
-    setSearchValue,
-    getCompanyCategories,
-  }
-)(withRouter(CompanyDesc));
+export default withRouter(CompanyDesc);

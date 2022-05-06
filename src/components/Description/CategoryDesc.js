@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { connect } from "react-redux";
-import { getCategory, deleteCategory, editCategory } from "../../store/categories/action";
-import { getCategories } from "../../store/categories/action";
 import { withRouter } from "react-router-dom";
 import qs from "query-string";
+import Loader from "../../components/Loader/Loader";
 import styled from "styled-components";
 import moment from "moment";
-import { Link } from "react-router-dom";
 import { Popconfirm, Button, Checkbox } from "antd";
 import CoreForm from "../ModalFrom/CoreForm";
-import TableBox from "../TableBox/TableBox";
 import Search from "../Search/Search";
-
+import { categoryEditInput } from "../../utils/FormInputs/CategoryFormInputs";
+import { useGetSingleCategories, useGetAllCategories, useDeleteCategory, useUpdateCategory } from "../../Requests/CategoryRequest";
 const Styles = styled.div`
   .title-child-categories {
     text-align: center;
@@ -19,122 +16,66 @@ const Styles = styled.div`
     margin-top: 30px;
   }
 `;
-const CategoryDesc = ({
-  getCategory,
-  deleteCategory,
-  editCategory,
-  getCategories,
-  category: { createdAt, updatedAt, name, id, child, categoryId, breadcrumbs, color, status, ...category },
-  history,
-  match: { params },
-}) => {
-  const inputData = [
-    { label: "Name", name: "name", type: "text", required: true },
-    { label: "Colour", name: "color", type: "text", required: true },
-    { label: "Price per", name: "pricePer", type: "text", required: false },
-    { label: "Measurement Unit", name: "measurementUnit", type: "text", required: false },
-  ];
+const CategoryDesc = ({ history, match: { params } }) => {
+  const { isLoading: categoryIsLoading, data: categoryData } = useGetSingleCategories(params.id);
+  const { isLoading: categoriesIsLoading, data: categoriesData } = useGetAllCategories();
+  const { mutate: updateCategory } = useUpdateCategory("categoryDes");
+  const { mutate: deleteCategory } = useDeleteCategory(history);
 
-  const selectData = [
-    {
-      name: "categoryId",
-      value: "id",
-      option: "name",
-      action: getCategories,
-      store: "categories",
-      lable: "Parent Category",
-      required: false,
-      mode: false,
-      categorySelect: true,
-    },
-  ];
-  const switchData = [{ label: "Subscription", name: "subscription", default: status?.subscription, required: false }];
+  const [inputs, setInputs] = useState(null);
+  useEffect(() => {
+    if (!categoryIsLoading) {
+      setInputs(categoryEditInput(categoriesData?.categories, categoriesData?.categories?.status?.subscription));
+    }
+  }, [categoryIsLoading, categoriesData]);
 
   const initialValue = {
-    name,
-    color,
-    categoryId,
-    subscription: status?.subscription,
-    pricePer: category.pricePer,
-    measurementUnit: category.measurementUnit,
+    name: categoryData?.category?.name,
+    color: categoryData?.category?.color,
+    categoryId: categoryData?.category?.categoryId,
+    subscription: categoryData?.category?.status?.subscription,
+    pricePer: categoryData?.category?.pricePer,
+    measurementUnit: categoryData?.category?.measurementUnit,
   };
 
   const divStyle = {
-    color: color,
+    color: categoryData?.category?.color,
   };
 
-  const setColor = (color) => {
-    return { backgroundColor: color, padding: "10px", border: "1px solid green" };
-  };
-
-  const sortParams = [
-    { label: "Category", value: "category" },
-    { label: "Id", value: "id" },
-    { label: "Date", value: "createdAt" },
-  ];
-
-  const [queryParams, setQueryParams] = useState(qs.parse(params.param));
+  const [queryParams] = useState(qs.parse(params.param));
 
   useEffect(() => {
     const queryString = qs.stringify(queryParams);
     history.replace(`/category/${params.id}/${queryString}`);
   }, [queryParams, history, params.id]);
 
-  useEffect(() => {
-    getCategory(params.id);
-  }, [getCategory, params.id]);
-
-  const handleDelete = (id) => {
-    deleteCategory(id).then(() => history.push("/categories/page=0&perPage=10"));
+  const handleDelete = () => {
+    deleteCategory(params.id);
   };
 
   const onSendForm = (values) => {
     const data = { ...values, status: { subscription: values.subscription } };
     delete data["subscription"];
-    editCategory(data, id);
+    updateCategory({ id: params.id, data });
   };
 
-  const setPage = (page) => {
-    setQueryParams((queryParams) => {
-      return {
-        ...queryParams,
-        page,
-      };
-    });
-  };
+  // const setPage = (page) => {
+  //   setQueryParams((queryParams) => {
+  //     return {
+  //       ...queryParams,
+  //       page,
+  //     };
+  //   });
+  // };
 
-  const setPerPage = (perPage) => {
-    setQueryParams((queryParams) => {
-      return {
-        ...queryParams,
-        perPage,
-      };
-    });
-  };
-
-  const tableHeader = () => (
-    <div className="item-box header">
-      <div className="item-link category">Category</div>
-      <div className="item-id">Colour</div>
-      <div className="item-id">ID</div>
-      <div className="item-date">Created At</div>
-    </div>
-  );
-
-  const tableData = (item) => (
-    <>
-      <Link className="item-link category" to={`/category/${[item.id]}/page=0&perPage=10`}>
-        {breadcrumbs.length ? breadcrumbs.map((crumb) => crumb) : null}
-        {`${breadcrumbs.length ? ` / ${name} / ` : `${name} / `} `}
-        {[item.name]}
-      </Link>
-      <div className="item-id">
-        <span style={setColor(item.color)}></span>
-      </div>
-      <div className="item-id">{[item.id]}</div>
-      <div className="item-date">{moment(item.createdAt).format("MMMM Do YYYY, h:mm")}</div>
-    </>
-  );
+  // const setPerPage = (perPage) => {
+  //   setQueryParams((queryParams) => {
+  //     return {
+  //       ...queryParams,
+  //       perPage,
+  //     };
+  //   });
+  // };
 
   return (
     <Styles>
@@ -142,78 +83,79 @@ const CategoryDesc = ({
         Go Back
       </Button>
       <div className="item-title">Category Details</div>
-      <div className="item-wrapper">
-        <div className="description-box category-details">
-          {/* createdAt */}
-          <div className="title-item-desc">Created At:</div>
-          <div>{moment(createdAt).format("MMMM Do YYYY, h:mm")}</div>
-          {/* updatedAt */}
-          <div className="title-item-desc">Updated At:</div>
-          <div>{moment(updatedAt).format("MMMM Do YYYY, h:mm")}</div>
-          {/* name */}
-          <div className="title-item-desc">Name:</div>
-          <div>{name}</div>
-          {/* color */}
-          <div className="title-item-desc">Colour:</div>
-          <div style={divStyle}>{color}</div>
-          {/* pricePer */}
-          <div className="title-item-desc">Price per:</div>
-          <div>{category.pricePer || "-"}</div>
-          {/* measurementUnit */}
-          <div className="title-item-desc">Measurement Unit:</div>
-          <div>{category.measurementUnit || "-"}</div>
-          {/* status.subscription */}
-          <div className="title-item-desc">Subscription:</div>
-          <div>
-            <Checkbox onChange={() => {}} checked={status?.subscription}></Checkbox>
-          </div>
-        </div>
-        <div className="controls-box">
-          <Popconfirm
-            onConfirm={() => handleDelete(id)}
-            title={`Are you sure you want to delete category ${name}？`}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button type="primary" danger>
-              Delete
-            </Button>
-          </Popconfirm>
-          <CoreForm
-            title={"Edits Category"}
-            // categorySelect={true}
-            initialValue={initialValue}
-            inputData={inputData}
-            selectData={selectData}
-            switchData={switchData}
-            onSendForm={onSendForm}
-          />
-        </div>
-      </div>
-      {child && child.length ? (
+      {inputs && !categoryIsLoading && !categoriesIsLoading ? (
         <>
-          <div className="title-child-categories">Child Categories</div>
-          <Search />
-          <TableBox
-            data={child}
-            tableHeader={tableHeader}
-            tableData={tableData}
-            titleParam={"name"}
-            sortParams={sortParams}
-            page={Number(queryParams.page)}
-            perPage={Number(queryParams.perPage)}
-            setPage={setPage}
-            setPerPage={setPerPage}
-          />
+          <div className="item-wrapper">
+            <div className="description-box category-details">
+              {/* createdAt */}
+              <div className="title-item-desc">Created At:</div>
+              <div>{moment(categoryData?.category?.createdAt).format("MMMM Do YYYY, h:mm")}</div>
+              {/* updatedAt */}
+              <div className="title-item-desc">Updated At:</div>
+              <div>{moment(categoryData?.category?.updatedAt).format("MMMM Do YYYY, h:mm")}</div>
+              {/* name */}
+              <div className="title-item-desc">Name:</div>
+              <div>{categoryData?.category?.name}</div>
+              {/* color */}
+              <div className="title-item-desc">Colour:</div>
+              <div style={divStyle}>{categoryData?.category?.color}</div>
+              {/* pricePer */}
+              <div className="title-item-desc">Price per:</div>
+              <div>{categoryData?.category?.pricePer || "-"}</div>
+              {/* measurementUnit */}
+              <div className="title-item-desc">Measurement Unit:</div>
+              <div>{categoryData?.category?.measurementUnit || "-"}</div>
+              {/* status.subscription */}
+              <div className="title-item-desc">Subscription:</div>
+              <div>
+                <Checkbox onChange={() => {}} checked={categoryData?.category?.status?.subscription}></Checkbox>
+              </div>
+            </div>
+            <div className="controls-box">
+              <Popconfirm
+                onConfirm={() => handleDelete(params.id)}
+                title={`Are you sure you want to delete category ${categoryData?.category?.name}？`}
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button type="primary" danger>
+                  Delete
+                </Button>
+              </Popconfirm>
+              <CoreForm
+                title={"Edits Category"}
+                // categorySelect={true}
+                initialValue={initialValue}
+                inputData={inputs.inputData}
+                selectData={inputs.selectData}
+                switchData={inputs.switchData}
+                onSendForm={onSendForm}
+              />
+            </div>
+          </div>
+          {categoryData?.category?.child && categoryData?.category?.child.length ? (
+            <>
+              <div className="title-child-categories">Child Categories</div>
+              <Search />
+              {/* <TableBox
+                data={child}
+                tableHeader={tableHeader}
+                tableData={tableData}
+                titleParam={"name"}
+                sortParams={sortParams}
+                page={Number(queryParams.page)}
+                perPage={Number(queryParams.perPage)}
+                setPage={setPage}
+                setPerPage={setPerPage}
+              /> */}
+            </>
+          ) : null}
         </>
-      ) : null}
+      ) : (
+        <Loader />
+      )}
     </Styles>
   );
 };
 
-export default connect(
-  (state) => ({
-    category: state.categories.category,
-  }),
-  { getCategory, deleteCategory, editCategory, getCategories }
-)(withRouter(CategoryDesc));
+export default withRouter(CategoryDesc);

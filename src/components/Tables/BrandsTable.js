@@ -5,7 +5,9 @@ import { FilterFilled } from "@ant-design/icons";
 import _ from "lodash";
 import moment from "moment";
 import styled from "styled-components";
-import { brandsEditInputs, setColor, getFilter, renderTableData } from "../../utils/FormInputs";
+import { setColor, getFilter, renderTableData } from "../../utils/helpers";
+import { brandsEditInputs } from "../../utils/FormInputs/BrandFormInputs";
+
 import CoreForm from "components/ModalFrom/CoreForm";
 import { useGetAllManufacturers } from "../../Requests/ManufacturerRequest";
 import { useGetAllBrands } from "../../Requests/BrandRequest";

@@ -7,11 +7,10 @@ import Search from "../Search/Search";
 import CoreForm from "../ModalFrom/CoreForm";
 import SelectBox from "../ModalFrom/Select";
 import { ClearOutlined } from "@ant-design/icons";
-import { notification } from "antd";
 import UsersTable from "components/Tables/UsersTable";
 import { useGetAllUsers, useCreateUsers, useUpdateUsers } from "../../Requests/UsersRequest";
 import { useGetAllCompanies } from "../../Requests/CompanyRequest";
-import { usersCreateInputs } from "../../utils/FormInputs";
+import { usersCreateInputs, usersSelectors } from "../../utils/FormInputs/UsersFormInputs";
 const UsersList = (props) => {
   const {
     match: { params },
@@ -19,9 +18,9 @@ const UsersList = (props) => {
   } = props;
 
   const { isLoading: companiesIsLoading, data: companiesData } = useGetAllCompanies();
-  const { isLoading: usersIsLoading, data: usersData } = useGetAllUsers();
-  const { mutate: createUser, isError: createUserIsError } = useCreateUsers();
-  const { mutate: updateUser, isError: updateUserIsError } = useUpdateUsers();
+  const { isLoading: usersIsLoading, data: usersData, status: usersStatus } = useGetAllUsers();
+  const { mutate: createUser } = useCreateUsers();
+  const { mutate: updateUser } = useUpdateUsers("list");
 
   const { searchValue } = useSelector((state) => {
     return {
@@ -40,21 +39,7 @@ const UsersList = (props) => {
 
   useEffect(() => {
     if (!companiesIsLoading) {
-      setSelectData([
-        {
-          param: "company",
-          initialValue: queryParams.company,
-          selectData: { selectValueSet },
-          placeholder: "Select Company",
-          actionParam: "company",
-          value: "name",
-          option: "name",
-          // initialId={item.initial}
-          lable: "Company",
-          store: companiesData?.companies,
-          clearSelect: { clearSelect },
-        },
-      ]);
+      setSelectData(usersSelectors(queryParams.company, companiesData?.companies, selectValueSet));
     }
   }, [companiesIsLoading, companiesData, queryParams, clearSelect]);
   const initialValue = {
@@ -91,18 +76,7 @@ const UsersList = (props) => {
 
   const onSendForm = (values) => {
     createUser(values);
-    if (createUserIsError) {
-      openNotification("error");
-    }
   };
-
-  const openNotification = (type) => {
-    notification[type]({
-      message: "Error",
-      description: "User with this email already exists.",
-    });
-  };
-
   const setPage = (page) => {
     setQueryParams((queryParams) => {
       return {
@@ -120,7 +94,7 @@ const UsersList = (props) => {
       };
     });
   };
-  const handleEditUser = (values) => {
+  const handleEditUser = async (values) => {
     const id = values.id;
     delete values["id"];
     updateUser({ id, values });
@@ -130,7 +104,7 @@ const UsersList = (props) => {
       <div className="item-title">Users</div>
       <Search />
 
-      {!usersIsLoading && formInputs ? (
+      {usersStatus === "success" && !usersIsLoading && formInputs ? (
         <>
           <CoreForm
             title={"Create User"}

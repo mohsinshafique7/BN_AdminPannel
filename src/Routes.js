@@ -38,20 +38,34 @@ import ScrapperError from "./pages/ScrapperError";
 import ProductError from "./pages/ProductError";
 import ScraperSettings from "./pages/ScraperSettings";
 import ScraperSetting from "./pages/ScraperSetting";
-import ErrorBoundary from "components/ErrorBoundary";
 import NotFoundPage from "components/NotFoundPage";
 import ErrorPopup from "components/ErrorPopup";
-
 import { resetError } from "store/error-handler/actions";
-
+import { ErrorBoundary } from "react-error-boundary";
+import FallBack from "components/Error-Boundary/FallBack";
 const Routers = () => {
   const { error } = useSelector((state) => state.errorHandler);
-
+  console.log("error", error);
   const dispatch = useDispatch();
 
+  const errorHandler = (error, errorInfo) => {
+    console.log(error);
+    console.log(errorInfo);
+    //   return <ErrorPopup
+    //   tokenHasExpired={error.status === 401}
+    //   cantVerifyToken={error.status === 403}
+    //   cancelHandler={() => dispatch(resetError())}
+    // />
+  };
   return (
     <Router>
-      <ErrorBoundary>
+      <ErrorBoundary
+        FallbackComponent={FallBack}
+        onError={errorHandler}
+        onReset={() => {
+          console.log("Error Reset");
+        }}
+      >
         <Switch>
           <SignInRoute exact path="/" component={SignIn} />
           <PrivateRoute exact path="/users/:param" component={Users} />
@@ -90,11 +104,7 @@ const Routers = () => {
           <Route component={NotFoundPage} />
         </Switch>
         {!!error ? (
-          <ErrorPopup
-            tokenHasExpired={error.status === 401}
-            cantVerifyToken={error.status === 403}
-            cancelHandler={() => dispatch(resetError())}
-          />
+          <ErrorPopup tokenHasExpired={error === 401} cantVerifyToken={error === 403} cancelHandler={() => dispatch(resetError())} />
         ) : null}
       </ErrorBoundary>
     </Router>

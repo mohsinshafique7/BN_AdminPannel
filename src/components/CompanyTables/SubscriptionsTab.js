@@ -13,7 +13,7 @@ const Location = ({ companyId, location, companyTaxonomies, subscriptionSubscrib
 
   useEffect(() => {
     setIsChecked(companyTaxonomies.includes(location.id));
-  }, [companyTaxonomies]);
+  }, [companyTaxonomies, location]);
 
   const setCheckbox = () => {
     setIsChecked(!isChecked);

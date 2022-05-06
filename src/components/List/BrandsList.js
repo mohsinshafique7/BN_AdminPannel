@@ -5,20 +5,21 @@ import qs from "query-string";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
 import CoreForm from "../ModalFrom/CoreForm";
-import { notification } from "antd";
 import BrandsTable from "components/Tables/BrandsTable";
 import { useGetAllManufacturers } from "../../Requests/ManufacturerRequest";
 import { useGetAllBrands, useCreateBrand, useUpdateBrand } from "../../Requests/BrandRequest";
-import { brandsCreateInputs } from "../../utils/FormInputs";
+import { brandsCreateInputs } from "../../utils/FormInputs/BrandFormInputs";
 const BrandsList = (props) => {
   const {
     match: { params },
     history,
   } = props;
-  const { isLoading: brandsIsLoading, data: brandsData } = useGetAllBrands();
-  const { mutate: createBrand, isError: createBrandIsError } = useCreateBrand();
-  const { mutate: updateBrand, isError: updateBrandIsError } = useUpdateBrand();
+
+  const { mutate: createBrand } = useCreateBrand();
+  const { mutate: updateBrand } = useUpdateBrand("list");
   const { isLoading: manufacturerIsLoading, data: manufacturerData } = useGetAllManufacturers();
+  const { isLoading: brandsIsLoading, data: brandsData, status: brandsStatus } = useGetAllBrands();
+
   const [formInputs, setFormInputs] = useState(null);
 
   useEffect(() => {
@@ -41,13 +42,6 @@ const BrandsList = (props) => {
 
   const onSendForm = (values) => {
     createBrand(values);
-  };
-
-  const openNotification = (type) => {
-    notification[type]({
-      message: "Error",
-      description: "Brand already exists",
-    });
   };
 
   const searchedData = useMemo(() => {
@@ -82,7 +76,7 @@ const BrandsList = (props) => {
     <>
       <div className="item-title">Brands</div>
       <Search />
-      {!brandsIsLoading && formInputs ? (
+      {brandsStatus === "success" && !brandsIsLoading && formInputs ? (
         <>
           <CoreForm title={"Create Brand"} inputData={formInputs.inputData} selectData={formInputs.selectData} onSendForm={onSendForm} />
           <BrandsTable

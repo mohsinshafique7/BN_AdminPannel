@@ -5,7 +5,9 @@ import { FilterFilled } from "@ant-design/icons";
 import _ from "lodash";
 import moment from "moment";
 import styled from "styled-components";
-import { renderTableData, getFilter, CompanyEditInput } from "../../utils/FormInputs";
+import { CompanyEditInput } from "../../utils/FormInputs/CompanyFormInputs";
+import { renderTableData, getFilter } from "../../utils/helpers";
+
 import CoreForm from "components/ModalFrom/CoreForm";
 
 export const Styles = styled.div`
@@ -17,7 +19,7 @@ export const Styles = styled.div`
     margin-top: 25px;
   }
 `;
-const CompaniesTable = ({ data, page, perPage, setPage, setPerPage, handleEditCompany }) => {
+const CompaniesTable = ({ data, page, perPage, setPage, setPerPage, handleEditCompany, showEdit = true }) => {
   const formInputs = CompanyEditInput();
   const dataSource = data.map((item) => {
     return {
@@ -29,7 +31,6 @@ const CompaniesTable = ({ data, page, perPage, setPage, setPerPage, handleEditCo
 
   const renderData = renderTableData(page, perPage, dataSource);
   const companiesFilter = getFilter(renderData, "name");
-
   const onChangePage = (page, pageSize) => {
     setPage(page - 1);
   };
@@ -40,8 +41,8 @@ const CompaniesTable = ({ data, page, perPage, setPage, setPerPage, handleEditCo
   const columns = [
     {
       title: "Edit",
-      dataIndex: "editUser",
-      key: "editUser",
+      dataIndex: "edit",
+      key: "edit",
       width: "5%",
       render: (_, record) => (
         <CoreForm
@@ -77,7 +78,13 @@ const CompaniesTable = ({ data, page, perPage, setPage, setPerPage, handleEditCo
       filterSearch: true,
       filterIcon: (filtered) => <FilterFilled style={{ color: filtered ? "#1890ff" : undefined }} />,
     },
-  ];
+  ].filter((item) => {
+    if (!showEdit) {
+      return item.key !== "edit";
+    } else {
+      return true;
+    }
+  });
   return (
     <Styles>
       <Table dataSource={renderData} columns={columns} pagination={false} />

@@ -5,15 +5,15 @@ import { showErrorPopup } from "../store/error-handler/actions";
 const path = process.env.REACT_APP_URL;
 
 const list = {
-  getAllCustomGroups: "getAllCustomGroups",
+  getAllSourceCategories: "getAllSourceCategories",
   getSingleCustomGroups: "getSingleCustomGroups",
 };
-export const useGetAllCustomGroups = () => {
+export const useGetAllSourceCategories = () => {
   const dispatch = useDispatch();
   return useQuery(
-    list.getAllCustomGroups,
+    list.getAllSourceCategories,
     () => {
-      return axios.get(`${path}/admin/product-groups`).then((res) => {
+      return axios.get(`${path}/admin/source-categories`).then((res) => {
         return res.data;
       });
     },
@@ -28,7 +28,6 @@ export const useCreateCustomGroup = () => {
   const queryClient = useQueryClient();
   return useMutation(
     (data) => {
-      console.log("Data", data);
       return axios.post(`${path}/admin/product-groups`, data);
     },
     {
@@ -51,33 +50,6 @@ export const useUpdateCustomGroup = () => {
     }
   );
 };
-export const useDeleteCustomGroup = () => {
-  const queryClient = useQueryClient();
-  return useMutation(
-    (id) => {
-      return axios.delete(`${path}/admin/product-groups/${id}`);
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(list.getAllCustomGroups);
-      },
-    }
-  );
-};
-export const useAddCoreProductsCustomGroup = () => {
-  const queryClient = useQueryClient();
-  return useMutation(
-    ({ id, values }) => {
-      return axios.put(`${path}/admin/product-groups/${id}/addCores`, values);
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(list.getAllCustomGroups);
-        queryClient.invalidateQueries(list.getSingleCustomGroups);
-      },
-    }
-  );
-};
 export const useGetSingleCustomGroups = (id) => {
   const dispatch = useDispatch();
   return useQuery(
@@ -90,6 +62,7 @@ export const useGetSingleCustomGroups = (id) => {
     },
     {
       enabled: false,
+
       onError: (error) => {
         dispatch(showErrorPopup(error.response.status));
       },

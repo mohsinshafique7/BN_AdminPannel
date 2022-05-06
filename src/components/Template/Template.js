@@ -9,7 +9,6 @@ import {
   GroupOutlined,
   FileProtectOutlined,
   ControlOutlined,
-  LinkOutlined,
   SettingOutlined,
   NotificationOutlined,
   WarningOutlined,
@@ -79,6 +78,7 @@ const Template = (props) => {
             <Menu.Item key="product-groups">
               <Link to={"/product-groups/page=0&perPage=10"}>
                 <FileProtectOutlined />
+
                 <span className="color-selected">Custom Groups</span>
               </Link>
             </Menu.Item>
@@ -98,25 +98,12 @@ const Template = (props) => {
                 <span className="color-selected">Core Products</span>
               </Link>
             </Menu.Item>
-            {/* <Menu.Item key="scrapper-links">
-              <Link to={"/scrapper-links/retailer&category&categoryType&page=0&perPage=10"}>
-                <LinkOutlined />
-                <span className="color-selected">Parser Links</span>
-              </Link>
-            </Menu.Item> */}
             <Menu.Item key="scraper-settings">
               <Link to={"/scraper-settings/page=0&perPage=10"}>
                 <SettingOutlined />
                 <span className="color-selected">Parser Settings</span>
               </Link>
             </Menu.Item>
-
-            {/* <Menu.Item key="source-categories">
-              <Link to={"/source-categories/page=0&perPage=10"}>
-                <SafetyCertificateOutlined />
-                <span className="color-selected">Source Categories</span>
-              </Link>
-            </Menu.Item> */}
             <Menu.Item key="mapping-suggestions">
               <Link to={"/mapping-suggestions/mapping/page=1&perPage=10"}>
                 <HeatMapOutlined />
