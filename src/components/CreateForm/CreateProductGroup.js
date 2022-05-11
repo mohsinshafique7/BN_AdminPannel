@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { withRouter } from "react-router-dom";
 import { Input, Pagination, Popover, Checkbox, Button, Empty, DatePicker, Switch } from "antd";
 import moment from "moment";
 import { HexColorPicker } from "react-colorful";
@@ -16,16 +15,15 @@ import {
   useCreateCustomGroup,
   useAddCoreProductsCustomGroup,
 } from "../../Requests/CustomGroupRequest";
+import { useParams, useHistory } from "react-router-dom";
 import { useGetAllCompanies } from "../../Requests/CompanyRequest";
 import { useGetAllUsers } from "../../Requests/UsersRequest";
 import { useGetAllCoreProducts } from "../../Requests/CoreProductRequest";
 const CreateProductGroup = (props) => {
   const { RangePicker } = DatePicker;
+  const params = useParams();
+  const history = useHistory();
 
-  const {
-    history,
-    match: { params },
-  } = props;
   const [coreParams, setCoreParams] = useState({
     title: "",
     ean: "",
@@ -48,8 +46,6 @@ const CreateProductGroup = (props) => {
   const { isLoading: usersIsLoading, data: usersData } = useGetAllUsers();
   const { isLoading: coreProductsIsLoading, data: coreProductsData } = useGetAllCoreProducts(coreParams);
   const [isCreateProduct, setIsCreateProduct] = useState(true);
-  console.log(companiesData);
-  console.log(usersData);
   const [queryParams, setQueryParams] = useState({
     name: "",
     color: "#ffffff",
@@ -552,4 +548,4 @@ const CreateProductGroup = (props) => {
   );
 };
 
-export default withRouter(CreateProductGroup);
+export default CreateProductGroup;

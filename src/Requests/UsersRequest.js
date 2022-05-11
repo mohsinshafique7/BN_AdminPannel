@@ -75,17 +75,33 @@ export const useUpdateUsers = (type) => {
     }
   );
 };
-export const useDeleteUsers = (history) => {
+export const useDeleteUsers = (history, id) => {
+  const queryClient = useQueryClient();
   return useMutation(
-    (id) => {
+    () => {
       return axios.delete(`${path}/users/${id}`);
     },
     {
-      onSuccess: () => {
-        history.push("/users/page=0&perPage=10");
+      onMutate: async () => {
+        await queryClient.cancelQueries(list.getAllUsers);
+        const previousData = await queryClient.getQueryData(list.getAllUsers);
+        const newData = previousData?.users.filter((user) => user.id !== Number(id));
+        queryClient.setQueryData(list.getAllUsers, () => {
+          return {
+            users: newData,
+          };
+        });
+        return {
+          previousData,
+        };
       },
-      onError: () => {
+      onError: (error, data, context) => {
+        queryClient.setQueryData(list.getAllUsers, context.previousData);
         openNotification("error", "Error", "Error Deleting User");
+      },
+      onSettled: () => {
+        history.push("/users/page=0&perPage=10");
+        queryClient.invalidateQueries(list.getAllUsers);
       },
     }
   );

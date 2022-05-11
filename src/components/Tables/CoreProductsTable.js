@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Pagination, Switch, Popover, Button } from "antd";
+import { Table, Pagination, Switch, Popover } from "antd";
 import { Link } from "react-router-dom";
 import { FilterFilled } from "@ant-design/icons";
 import _ from "lodash";
@@ -8,7 +8,7 @@ import CoreForm from "components/ModalFrom/CoreForm";
 import { CoreProductEditInput } from "../../utils/FormInputs/CoreProductFormInputs";
 import { useGetAllCategories } from "../../Requests/CategoryRequest";
 import { useGetAllBrands } from "../../Requests/BrandRequest";
-
+import { GlobalOutlined } from "@ant-design/icons";
 export const Styles = styled.div`
   margin-top: 15px;
 
@@ -28,11 +28,13 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, ha
       setFormInputs(CoreProductEditInput(brandsData.brands, categoriesData?.categories));
     }
   }, [categoriesIsLoading, brandsIsLoading, categoriesData, brandsData]);
+
   const dataSource = data.map((item) => {
     return {
       key: item.id,
       image: item.image,
       name: item.title,
+      ean: item.ean,
       size: item.size,
       category: item?.category?.name,
       brand: item?.productBrand?.name,
@@ -63,7 +65,7 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, ha
       title: "Edit",
       dataIndex: "editUser",
       key: "editUser",
-      width: "5%",
+      width: "3%",
       render: (_, record) =>
         formInputs && !categoriesIsLoading && !brandsIsLoading ? (
           <CoreForm
@@ -73,6 +75,7 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, ha
               id: record.key,
               title: record.name,
               image: record.image,
+              ean: record.ean,
               secondaryImages: record.secondaryImages,
               description: record.description,
               features: record.features,
@@ -108,7 +111,7 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, ha
           }
           trigger="click"
         >
-          <Button type="primary">Click</Button>
+          <img width="50px" height="50px" src={`${text}?${+new Date().getTime()}`} alt="product" />
         </Popover>
       ),
     },
@@ -116,7 +119,7 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, ha
       title: "Name",
       dataIndex: "name",
       key: "name",
-      width: "35%",
+      width: "71%",
       render: (text, record) => <Link to={`/core-product/${record.key}`}>{text}</Link>,
       sorter: (a, b) => {
         if (a.name < b.name) {
@@ -136,13 +139,13 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, ha
       title: "Size",
       dataIndex: "size",
       key: "size",
-      width: "10%",
+      width: "3%",
     },
     {
       title: "Category",
       dataIndex: "category",
       key: "category",
-      width: "15%",
+      width: "10%",
       filterSearch: true,
       sorter: (a, b) => {
         if (a.category < b.category) {
@@ -161,23 +164,23 @@ const CoreProductsTable = ({ count, data, page, perPage, setPage, setPerPage, ha
       title: "Brand",
       dataIndex: "brand",
       key: "brand",
-      width: "15%",
+      width: "5%",
     },
     {
       title: "Invalid EAN",
       dataIndex: "invalidEan",
       key: "invalidEan",
-      width: "10%",
+      width: "3%",
       render: (text) => <Switch defaultChecked={text} disabled />,
     },
     {
       title: "Source",
       dataIndex: "source",
       key: "source",
-      width: "10%",
+      width: "3%",
       render: (text) => (
         <Link to={{ pathname: text }} target="_blank">
-          Source
+          <GlobalOutlined style={{ fontSize: "1.5rem" }} />
         </Link>
       ),
     },

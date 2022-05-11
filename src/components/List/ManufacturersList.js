@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { withRouter } from "react-router-dom";
 import qs from "query-string";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
@@ -9,17 +8,16 @@ import ManufacturersTable from "components/Tables/ManufacturersTable";
 import { manufacturerCreateInputs } from "../../utils/FormInputs/ManufacturerFormInputs";
 import { useGetAllManufacturers, useCreateManufacturer, useUpdateManufacturer } from "../../Requests/ManufacturerRequest";
 import { useGetAllBrands } from "../../Requests/BrandRequest";
-const ManufacturersList = (props) => {
-  const {
-    match: { params },
-    history,
-  } = props;
+import { useHistory } from "react-router-dom";
+const ManufacturersList = () => {
+  const history = useHistory();
   const { isLoading: brandsIsLoading, data: brandsData, status: brandsStatus } = useGetAllBrands();
   const { isLoading: manufacturerIsLoading, data: manufacturerData, status: manufacturersStatus } = useGetAllManufacturers();
   const { mutate: createManufacturer } = useCreateManufacturer();
   const { mutate: updateManufacturer } = useUpdateManufacturer("list");
-
   const [formInputs, setFormInputs] = useState(null);
+  const [queryParams, setQueryParams] = useState(qs.parse(history.location.search));
+
   useEffect(() => {
     if (!brandsIsLoading) {
       setFormInputs(manufacturerCreateInputs(brandsData?.brands));
@@ -30,13 +28,6 @@ const ManufacturersList = (props) => {
       searchValue: state.filters.searchValue,
     };
   });
-
-  const [queryParams, setQueryParams] = useState(qs.parse(params.param));
-
-  useEffect(() => {
-    const queryString = qs.stringify(queryParams);
-    history.replace(`/manufacturers/${queryString}`);
-  }, [queryParams, history]);
 
   const onSendForm = (values) => {
     const { name, brands, color } = values;
@@ -56,6 +47,10 @@ const ManufacturersList = (props) => {
       };
     });
   };
+  useEffect(() => {
+    const queryString = qs.stringify(queryParams);
+    history.replace(`/manufacturers?${queryString}`);
+  }, [queryParams, history]);
 
   const setPerPage = (perPage) => {
     setQueryParams((queryParams) => {
@@ -65,6 +60,7 @@ const ManufacturersList = (props) => {
       };
     });
   };
+
   function handleEditManufacturer(values) {
     const { name, color, id } = values;
     updateManufacturer({ manufacturer: { manufacturer: { name, color } }, id });
@@ -100,4 +96,4 @@ const ManufacturersList = (props) => {
   );
 };
 
-export default withRouter(ManufacturersList);
+export default ManufacturersList;

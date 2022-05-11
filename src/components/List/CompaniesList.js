@@ -1,19 +1,16 @@
 import React, { useEffect, useState, useMemo } from "react";
 import moment from "moment";
 import { useSelector } from "react-redux";
-import { withRouter } from "react-router-dom";
 import qs from "query-string";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
 import CoreForm from "../ModalFrom/CoreForm";
 import CompaniesTable from "components/Tables/CompaniesTable";
+import { useHistory } from "react-router-dom";
 import { CompanyCreateInput } from "../../utils/FormInputs/CompanyFormInputs";
 import { useGetAllCompanies, useCreateCompany, useUpdateCompany } from "../../Requests/CompanyRequest";
-const CompaniesList = (props) => {
-  const {
-    match: { params },
-    history,
-  } = props;
+const CompaniesList = () => {
+  const history = useHistory();
   const formInputs = CompanyCreateInput();
 
   const { isLoading: companiesIsLoading, data: companiesData, status: companiesStatus } = useGetAllCompanies();
@@ -26,11 +23,11 @@ const CompaniesList = (props) => {
     };
   });
 
-  const [queryParams, setQueryParams] = useState(qs.parse(params.param));
+  const [queryParams, setQueryParams] = useState(qs.parse(history.location.search));
 
   useEffect(() => {
     const queryString = qs.stringify(queryParams);
-    history.replace(`/companies/${queryString}`);
+    history.replace(`/companies?${queryString}`);
   }, [queryParams, history]);
 
   const onSendForm = (values) => {
@@ -90,4 +87,4 @@ const CompaniesList = (props) => {
   );
 };
 
-export default withRouter(CompaniesList);
+export default CompaniesList;

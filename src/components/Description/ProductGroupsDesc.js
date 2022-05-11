@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { withRouter } from "react-router-dom";
 import { Popconfirm, Tooltip, Button, Input, Popover } from "antd";
 import { HexColorPicker } from "react-colorful";
 import Search from "../Search/Search";
@@ -11,8 +10,12 @@ import { useGetSingleCustomGroups, useUpdateCustomGroup, useDeleteCustomGroup } 
 import { useGetAllCompanies } from "../../Requests/CompanyRequest";
 import { useGetAllUsers } from "../../Requests/UsersRequest";
 import { CustomGroupEditInput } from "../../utils/FormInputs/CustomGroupFormInputs";
-const ProductGroupsDesc = ({ history, match: { params } }) => {
-  const { isLoading: singleCustomGroupsIsLoading, data: singleCustomGroupsData, refetch } = useGetSingleCustomGroups(params.id);
+import { useParams, useHistory } from "react-router-dom";
+
+const ProductGroupsDesc = () => {
+  const { id: paramId } = useParams();
+  const history = useHistory();
+  const { isLoading: singleCustomGroupsIsLoading, data: singleCustomGroupsData, refetch } = useGetSingleCustomGroups(paramId);
   const { isLoading: companiesIsLoading, data: companiesData } = useGetAllCompanies();
   const { isLoading: usersIsLoading, data: usersData } = useGetAllUsers();
 
@@ -45,7 +48,7 @@ const ProductGroupsDesc = ({ history, match: { params } }) => {
   }, [singleCustomGroupsData, singleCustomGroupsIsLoading]);
 
   const initialValue = {
-    id: params.id,
+    id: paramId,
     name: singleCustomGroupsData?.productGroup?.name,
     userId: singleCustomGroupsData?.productGroup?.user?.id,
     companyId: singleCustomGroupsData?.productGroup?.company?.id,
@@ -63,12 +66,12 @@ const ProductGroupsDesc = ({ history, match: { params } }) => {
     console.log("Need to be fixed");
   };
   const handleEditColor = () => {
-    updateCustomGroup({ values: { color: inintialColor }, id: params.id });
+    updateCustomGroup({ values: { color: inintialColor }, id: paramId });
     setEditColor(false);
   };
 
   const handleDelete = () => {
-    deleteCustomGroup(params.id);
+    deleteCustomGroup(paramId);
   };
   useEffect(() => {
     if (deleteCustomGroupStatus === "success") {
@@ -78,7 +81,7 @@ const ProductGroupsDesc = ({ history, match: { params } }) => {
 
   const onSendForm = (values) => {
     delete values["id"];
-    updateCustomGroup({ values, id: params.id });
+    updateCustomGroup({ values, id: paramId });
   };
 
   return (
@@ -149,7 +152,7 @@ const ProductGroupsDesc = ({ history, match: { params } }) => {
             </div>
             <div className="controls-box">
               <Popconfirm
-                onConfirm={() => handleDelete(params.id)}
+                onConfirm={() => handleDelete(paramId)}
                 title={`Are you sure you want to delete group product ${singleCustomGroupsData?.productGroup?.name}？`}
                 okText="Yes"
                 cancelText="No"
@@ -166,7 +169,7 @@ const ProductGroupsDesc = ({ history, match: { params } }) => {
                 onSendForm={onSendForm}
               />
 
-              <Button type="primary" onClick={() => history.push(`/create-product-group/${params.id}`)}>
+              <Button type="primary" onClick={() => history.push(`/create-product-group/${paramId}`)}>
                 Edit Core Product
               </Button>
             </div>
@@ -179,4 +182,4 @@ const ProductGroupsDesc = ({ history, match: { params } }) => {
   );
 };
 
-export default withRouter(ProductGroupsDesc);
+export default ProductGroupsDesc;

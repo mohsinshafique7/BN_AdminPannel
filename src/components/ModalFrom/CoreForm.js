@@ -80,7 +80,7 @@ const CoreForm = (props) => {
                   name={item.name}
                   rules={[{ required: item.required, message: `Please input ${item.label}!` }]}
                 >
-                  <Input type={item.type} placeholder={item.label} />
+                  <Input type={item.type} placeholder={item.label} readOnly={item.readOnly} />
                 </Form.Item>
               ))
             : null}

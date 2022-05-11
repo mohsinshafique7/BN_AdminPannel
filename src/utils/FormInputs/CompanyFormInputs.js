@@ -1,5 +1,3 @@
-import _ from "lodash";
-
 export const brandsEditInputs = (manufacturerData, brandsData) => {
   return {
     inputData: [

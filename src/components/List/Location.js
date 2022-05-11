@@ -1,8 +1,6 @@
-import React, { useState, useEffect  } from "react";
+import React, { useState } from "react";
 import { CollapseClose, CollapseOpen } from "assets/icons";
-import { Checkbox} from "antd";;
-
-
+import { Checkbox } from "antd";
 
 const Location = ({
   location: {
@@ -14,15 +12,13 @@ const Location = ({
   updateSubscription,
 }) => {
   const [isOpenChild, setIsOpenChild] = useState(false);
-  const handleStatus = (name, {checked}) => {
+  const handleStatus = (name, { checked }) => {
     updateSubscription(locationId, { status: { [name]: checked } });
   };
 
-  
-
   const openChild = () => {
-    setIsOpenChild(!isOpenChild)
-  }
+    setIsOpenChild(!isOpenChild);
+  };
 
   return (
     <div className="category-wrap">
@@ -39,13 +35,13 @@ const Location = ({
         </div>
 
         <div className="checkboxes-wrap">
-          <Checkbox onChange={({target}) => handleStatus("products", target)} checked={products}>
+          <Checkbox onChange={({ target }) => handleStatus("products", target)} checked={products}>
             Products
           </Checkbox>
-          <Checkbox onChange={({target}) => handleStatus("banners", target)} checked={banners}>
+          <Checkbox onChange={({ target }) => handleStatus("banners", target)} checked={banners}>
             Banners
           </Checkbox>
-          <Checkbox onChange={({target}) => handleStatus("subscription", target)} checked={subscription}>
+          <Checkbox onChange={({ target }) => handleStatus("subscription", target)} checked={subscription}>
             Subscription
           </Checkbox>
         </div>

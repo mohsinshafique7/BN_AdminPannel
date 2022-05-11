@@ -1,30 +1,30 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { withRouter } from "react-router-dom";
 import { CoreProductDescStyles } from "./style";
-import { Switch, Modal, Checkbox, Input, Button } from "antd";
+import { Switch, Button } from "antd";
 import Loader from "../Loader/Loader";
 import CoreForm from "../ModalFrom/CoreForm";
 
 // import { manuallyReplaceProductCore } from "../../store/suggestions/action";
-import { useGetSingleCoreProduct, useMergeCoreProduct } from "../../Requests/CoreProductRequest";
+import { useGetSingleCoreProduct, useMergeCoreProduct, useUpdateCoreProduct } from "../../Requests/CoreProductRequest";
 import { useGetAllBrands } from "../../Requests/BrandRequest";
 import { useGetAllCategories } from "../../Requests/CategoryRequest";
 import { useGetAllCustomGroups } from "../../Requests/CustomGroupRequest";
+import { useManuallyReplaceCoreProduct } from "../../Requests/SuggestionRequest";
 const CoreProductDesc = (props) => {
   const {
     history,
     match: { params },
   } = props;
 
-  const [visible, setVisible] = useState(false);
-  const [checkbox, setCheckbox] = useState(false);
-  const [valueEan, setValueEan] = useState("");
   const [coreImage, setCoreImage] = useState("");
   const { isLoading: coreProductIsLoading, data: coreProductData } = useGetSingleCoreProduct(params.id);
   const { data: brandsData } = useGetAllBrands();
   const { data: categoriesData } = useGetAllCategories();
   const { data: customGroupsData } = useGetAllCustomGroups();
   const { mutate: mergeProduct } = useMergeCoreProduct();
+  const { mutate: updateCoreProduct } = useUpdateCoreProduct();
+  const { mutate: manuallyResolveCoreProduct } = useManuallyReplaceCoreProduct();
   const inputData = [
     { label: "Title", name: "title", type: "text", required: false },
     { label: "Size", name: "size", type: "number", required: false },
@@ -37,7 +37,10 @@ const CoreProductDesc = (props) => {
   const mergeInitialValue = {
     baseEan: coreProductData?.core?.ean,
   };
-
+  const resolveManually = [{ label: "Product EAN", name: "productEan", type: "text", required: true }];
+  const resolveManuallyInitialValue = {
+    productEan: coreProductData?.core?.ean,
+  };
   const areaData = [
     { label: "Description", name: "description", required: false },
     { label: "Ingredients", name: "ingredients", required: false },
@@ -96,37 +99,15 @@ const CoreProductDesc = (props) => {
     size: coreProductData?.core?.size,
   };
 
-  // useEffect(() => {
-  //   getCoreProduct(params.id);
-  // }, [getCoreProduct, params.id]);
-
-  useEffect(() => {
-    if (checkbox) {
-      setValueEan(coreProductData?.core?.ean);
-    } else {
-      setValueEan("");
-    }
-  }, [checkbox, coreProductData]);
-
-  const handleType = (e) => setValueEan(e.target.value);
-
-  const handleManually = () => {
-    // if (valueEan.length) {
-    //   manuallyReplaceProductCore({ id, suggestedEan: valueEan })
-    //     .then(() => history.goBack())
-    //     .catch(() => openNotification());
-    // }
-    console.log("Handle Manually");
+  const handleManually = (values) => {
+    manuallyResolveCoreProduct({ id: params.id, suggestedEan: values.productEan });
   };
 
   const onSendForm = (values) => {
-    console.log(coreImage);
-    // const data = values;
-    // if (coreImage.length) {
-    //   Object.assign(data, { image: coreImage });
-    // }
-    // editCoreProduct("EDIT_CORE_PRODUCT", id, data);
-    console.log("Edit Core Product");
+    if (coreImage.length) {
+      Object.assign(values, { image: coreImage });
+    }
+    updateCoreProduct({ id: params.id, values });
   };
 
   const parentCategory = (parent) => {
@@ -253,20 +234,12 @@ const CoreProductDesc = (props) => {
             onSendForm={onSendForm}
           />
           <div className="resolve-box">
-            <Button type="primary" danger onClick={() => setVisible(true)}>
-              Resolve Manually
-            </Button>
-            <Modal
-              className="modal-suggestions"
-              title={props.title}
-              visible={visible}
-              onOk={handleManually}
-              onCancel={() => setVisible(false)}
-              okText="Resolve"
-            >
-              <Input className="input-product" onChange={handleType} value={valueEan} placeholder="product ean" />
-              <Checkbox onChange={() => setCheckbox(!checkbox)}>Set own product</Checkbox>
-            </Modal>
+            <CoreForm
+              title={"Resolve Manually"}
+              initialValue={resolveManuallyInitialValue}
+              inputData={resolveManually}
+              onSendForm={handleManually}
+            />
           </div>
           <br />
           <CoreForm

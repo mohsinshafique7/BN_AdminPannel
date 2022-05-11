@@ -26,7 +26,7 @@ const SectionTab = ({ companyId }) => {
       const selectedSection = response.data.result.companySections.map((item) => item.name);
       setSelectedItem(selectedSection);
     });
-  }, []);
+  }, [companyId, dispatch]);
 
   const handleChange = (name, id) => {
     if (selectedItem.includes(name)) {

@@ -1,17 +1,14 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Button } from "antd";
 import { useSelector } from "react-redux";
-import { withRouter } from "react-router-dom";
 import qs from "query-string";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
+import { useHistory } from "react-router-dom";
 import ProductGroupTable from "components/Tables/ProductGroupTable";
 import { useGetAllCustomGroups, useUpdateCustomGroup } from "../../Requests/CustomGroupRequest";
-const ProductGroupsList = (props) => {
-  const {
-    match: { params },
-    history,
-  } = props;
+const ProductGroupsList = () => {
+  const history = useHistory();
   const { isLoading: customGroupsIsLoading, data: customGroupsData, status: customGroupListStatus } = useGetAllCustomGroups();
   const { mutate: updateCustomGroup } = useUpdateCustomGroup("list");
   const { searchValue } = useSelector((state) => {
@@ -20,11 +17,11 @@ const ProductGroupsList = (props) => {
     };
   });
 
-  const [queryParams, setQueryParams] = useState(qs.parse(params.param));
+  const [queryParams, setQueryParams] = useState(qs.parse(history.location.search));
 
   useEffect(() => {
     const queryString = qs.stringify(queryParams);
-    history.replace(`/product-groups/${queryString}`);
+    history.replace(`/product-groups?${queryString}`);
   }, [queryParams, history]);
 
   const setPage = (page) => {
@@ -84,4 +81,4 @@ const ProductGroupsList = (props) => {
   );
 };
 
-export default withRouter(ProductGroupsList);
+export default ProductGroupsList;

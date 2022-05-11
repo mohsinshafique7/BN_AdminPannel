@@ -1,20 +1,23 @@
 import React, { useEffect } from "react";
-import { withRouter } from "react-router-dom";
 import moment from "moment";
 import { Popconfirm, Button } from "antd";
 import CoreForm from "../ModalFrom/CoreForm";
 import { retailerEditInput } from "../../utils/FormInputs/RetailerFormInputs";
 import { useGetSingleRetailers, useUpdateRetailer, useDeleteRetailer } from "../../Requests/RetailerRequest";
 import Loader from "../../components/Loader/Loader";
-const RetailerDesc = ({ history, match: { params } }) => {
-  const { isLoading: retailerIsLoading, data: retailerData } = useGetSingleRetailers(params.id);
+import { useParams, useHistory } from "react-router-dom";
+
+const RetailerDesc = () => {
+  const { id: paramId } = useParams();
+  const history = useHistory();
+  const { isLoading: retailerIsLoading, data: retailerData } = useGetSingleRetailers(paramId);
   const { mutate: updateRetailer } = useUpdateRetailer("retailerDes");
   const { mutate: deleteRetailer, status: retailerDeleteStatus } = useDeleteRetailer();
 
   const inputData = retailerEditInput();
 
   const initialValue = {
-    id: params.id,
+    id: paramId,
     color: retailerData?.retailer?.color,
   };
   useEffect(() => {
@@ -23,7 +26,7 @@ const RetailerDesc = ({ history, match: { params } }) => {
     }
   }, [retailerDeleteStatus, history]);
   const handleDelete = () => {
-    deleteRetailer(params.id);
+    deleteRetailer(paramId);
   };
   const divStyle = {
     color: retailerData?.retailer?.color,
@@ -58,7 +61,7 @@ const RetailerDesc = ({ history, match: { params } }) => {
           </div>
           <div className="controls-box">
             <Popconfirm
-              onConfirm={() => handleDelete(params.id)}
+              onConfirm={() => handleDelete(paramId)}
               title={`Are you sure you want to delete retailer ${retailerData?.retailer?.name}？`}
               okText="Yes"
               cancelText="No"
@@ -77,4 +80,4 @@ const RetailerDesc = ({ history, match: { params } }) => {
   );
 };
 
-export default withRouter(RetailerDesc);
+export default RetailerDesc;

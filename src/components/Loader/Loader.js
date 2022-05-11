@@ -15,7 +15,9 @@ export const Styles = styled.div`
 export default () => {
   return (
     <Styles>
-      <Loader className="loader" type="Oval" color={loaderColor} height={100} width={100} />
+      <div data-testid="loaders">
+        <Loader className="loader" type="Oval" color={loaderColor} height={100} width={100} />
+      </div>
     </Styles>
   );
 };

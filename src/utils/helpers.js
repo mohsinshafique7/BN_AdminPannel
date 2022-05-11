@@ -322,3 +322,8 @@ export const openNotification = (type, message = "Error", description = "An Erro
     description,
   });
 };
+
+export const chnageSearchParamInQuery = (history, queryParam, value, ...rest) => {
+  queryParam = value;
+  history.replace({ search: new URLSearchParams(...rest).toString() });
+};

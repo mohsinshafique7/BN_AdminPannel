@@ -16,11 +16,7 @@ export const Styles = styled.div`
 `;
 const UsersHistoryTable = ({ id }) => {
   const [postParams, setPostParams] = useState({ page: 1, perPage: 10 });
-  const {
-    isLoading: userHistoryIsLoading,
-    isFetching: userHistoryIsFetching,
-    data: userHistoryData,
-  } = useGetUserHistory({ id, params: postParams });
+  const { isLoading: userHistoryIsLoading, data: userHistoryData } = useGetUserHistory({ id, params: postParams });
 
   const dataSource = userHistoryData?.history?.rows.map((item) => {
     return {
@@ -63,12 +59,13 @@ const UsersHistoryTable = ({ id }) => {
   ];
   return (
     <Styles>
-      {!userHistoryIsLoading && !userHistoryIsFetching ? (
+      {!userHistoryIsLoading ? (
         <>
           <Table dataSource={dataSource} columns={columns} pagination={false} />
+
           <Pagination
             className="pagination-controls"
-            total={userHistoryData.history.count}
+            total={userHistoryData?.history?.count}
             showTotal={(total) => `Total ${total} items`}
             pageSize={postParams.perPage}
             current={postParams.page}

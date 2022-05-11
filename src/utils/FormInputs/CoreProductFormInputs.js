@@ -1,5 +1,3 @@
-import _ from "lodash";
-
 export const CoreProductEditInput = (brandsData, categoriesData) => {
   return {
     selectData: [
@@ -26,6 +24,7 @@ export const CoreProductEditInput = (brandsData, categoriesData) => {
       { label: "Title", name: "title", type: "text", required: false },
       { label: "Size", name: "size", type: "number", required: false },
       { label: "Id", name: "id", type: "number", required: false, display: false },
+      { label: "EAN", name: "ean", type: "number", required: false, readOnly: true },
     ],
     areaData: [
       { label: "Description", name: "description", required: false, display: false },

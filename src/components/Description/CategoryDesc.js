@@ -7,6 +7,7 @@ import moment from "moment";
 import { Popconfirm, Button, Checkbox } from "antd";
 import CoreForm from "../ModalFrom/CoreForm";
 import Search from "../Search/Search";
+import { useParams, useHistory } from "react-router-dom";
 import { categoryEditInput } from "../../utils/FormInputs/CategoryFormInputs";
 import { useGetSingleCategories, useGetAllCategories, useDeleteCategory, useUpdateCategory } from "../../Requests/CategoryRequest";
 const Styles = styled.div`
@@ -16,7 +17,9 @@ const Styles = styled.div`
     margin-top: 30px;
   }
 `;
-const CategoryDesc = ({ history, match: { params } }) => {
+const CategoryDesc = () => {
+  const params = useParams();
+  const history = useHistory();
   const { isLoading: categoryIsLoading, data: categoryData } = useGetSingleCategories(params.id);
   const { isLoading: categoriesIsLoading, data: categoriesData } = useGetAllCategories();
   const { mutate: updateCategory } = useUpdateCategory("categoryDes");
@@ -58,24 +61,6 @@ const CategoryDesc = ({ history, match: { params } }) => {
     delete data["subscription"];
     updateCategory({ id: params.id, data });
   };
-
-  // const setPage = (page) => {
-  //   setQueryParams((queryParams) => {
-  //     return {
-  //       ...queryParams,
-  //       page,
-  //     };
-  //   });
-  // };
-
-  // const setPerPage = (perPage) => {
-  //   setQueryParams((queryParams) => {
-  //     return {
-  //       ...queryParams,
-  //       perPage,
-  //     };
-  //   });
-  // };
 
   return (
     <Styles>

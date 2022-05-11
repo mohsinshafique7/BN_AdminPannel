@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { withRouter } from "react-router-dom";
 import qs from "query-string";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
@@ -9,18 +8,16 @@ import BrandsTable from "components/Tables/BrandsTable";
 import { useGetAllManufacturers } from "../../Requests/ManufacturerRequest";
 import { useGetAllBrands, useCreateBrand, useUpdateBrand } from "../../Requests/BrandRequest";
 import { brandsCreateInputs } from "../../utils/FormInputs/BrandFormInputs";
-const BrandsList = (props) => {
-  const {
-    match: { params },
-    history,
-  } = props;
-
+import { useParams, useHistory } from "react-router-dom";
+const BrandsList = () => {
+  const history = useHistory();
   const { mutate: createBrand } = useCreateBrand();
   const { mutate: updateBrand } = useUpdateBrand("list");
   const { isLoading: manufacturerIsLoading, data: manufacturerData } = useGetAllManufacturers();
   const { isLoading: brandsIsLoading, data: brandsData, status: brandsStatus } = useGetAllBrands();
 
   const [formInputs, setFormInputs] = useState(null);
+  const [queryParams, setQueryParams] = useState(qs.parse(history.location.search));
 
   useEffect(() => {
     if (!brandsIsLoading && !manufacturerIsLoading) {
@@ -33,11 +30,9 @@ const BrandsList = (props) => {
     };
   });
 
-  const [queryParams, setQueryParams] = useState(qs.parse(params.param));
-
   useEffect(() => {
     const queryString = qs.stringify(queryParams);
-    history.replace(`/brands/${queryString}`);
+    history.replace(`/brands?${queryString}`);
   }, [queryParams, history]);
 
   const onSendForm = (values) => {
@@ -95,4 +90,4 @@ const BrandsList = (props) => {
   );
 };
 
-export default withRouter(BrandsList);
+export default BrandsList;

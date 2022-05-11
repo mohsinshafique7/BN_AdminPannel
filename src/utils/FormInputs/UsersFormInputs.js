@@ -60,12 +60,11 @@ export const usersCreateInputs = (companiesData) => {
     switchData: [{ label: "Admin", name: "is_stuff", default: "active", required: false }],
   };
 };
-export const usersSelectors = (initialValue, companiesData, selectValueSet) => {
+export const usersSelectors = (initialValue, companiesData) => {
   return [
     {
       param: "company",
       initialValue: initialValue,
-      selectData: { selectValueSet },
       placeholder: "Select Company",
       actionParam: "company",
       value: "name",
@@ -73,7 +72,6 @@ export const usersSelectors = (initialValue, companiesData, selectValueSet) => {
       // initialId={item.initial}
       lable: "Company",
       store: companiesData,
-      clearSelect: { selectValueSet },
     },
   ];
 };

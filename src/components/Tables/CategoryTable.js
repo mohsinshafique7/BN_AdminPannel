@@ -20,7 +20,6 @@ export const Styles = styled.div`
   }
 `;
 const CategoryTable = ({ changeSubscription, data, page, perPage, setPage, setPerPage, handleCategoryEdit, showEdit = true }) => {
-  // const formInputs = categoryEditInput();
   const { isLoading: categoriesIsLoading, data: categoriesData } = useGetAllCategories();
   const [formInputs, setFormInputs] = useState(null);
   useEffect(() => {
@@ -64,7 +63,7 @@ const CategoryTable = ({ changeSubscription, data, page, perPage, setPage, setPe
       render: (_, record) =>
         !categoriesIsLoading && formInputs ? (
           <CoreForm
-            title={"Edits"}
+            title={"Edit"}
             // categorySelect={true}
             initialValue={{
               id: record.key,

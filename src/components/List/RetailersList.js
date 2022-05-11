@@ -1,21 +1,20 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { withRouter } from "react-router-dom";
 import qs from "query-string";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
 import CoreForm from "../ModalFrom/CoreForm";
+import { useHistory } from "react-router-dom";
+
 import RetailerTable from "components/Tables/RetailerTable";
 import { retailerCreateInput } from "../../utils/FormInputs/RetailerFormInputs";
 import { useGetAllRetailers, useCreateRetailer, useUpdateRetailer } from "../../Requests/RetailerRequest";
-const RetailersList = (props) => {
-  const {
-    match: { params },
-    history,
-  } = props;
+const RetailersList = () => {
+  const history = useHistory();
   const { isLoading: retailersIsLoading, data: retailersData, status: retailersStatus } = useGetAllRetailers();
   const { mutate: createRetailer } = useCreateRetailer();
   const { mutate: updateRetailer } = useUpdateRetailer("list");
+  const [queryParams, setQueryParams] = useState(qs.parse(history.location.search));
   const formInputs = retailerCreateInput();
   const { searchValue } = useSelector((state) => {
     return {
@@ -23,11 +22,9 @@ const RetailersList = (props) => {
     };
   });
 
-  const [queryParams, setQueryParams] = useState(qs.parse(params.param));
-
   useEffect(() => {
     const queryString = qs.stringify(queryParams);
-    history.replace(`/retailers/${queryString}`);
+    history.replace(`/retailers?${queryString}`);
   }, [queryParams, history]);
 
   const onSendForm = (values) => {
@@ -83,4 +80,4 @@ const RetailersList = (props) => {
   );
 };
 
-export default withRouter(RetailersList);
+export default RetailersList;

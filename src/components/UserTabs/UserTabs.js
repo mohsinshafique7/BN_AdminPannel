@@ -1,9 +1,7 @@
 import React from "react";
-import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import { Tabs, Button } from "antd";
 import UserDesc from "../Description/UserDesc";
-import MainWeights from "../Weights/MainWeights";
 
 const UserTabs = ({ user, history }) => {
   const { TabPane } = Tabs;

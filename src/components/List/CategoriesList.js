@@ -1,22 +1,19 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { withRouter } from "react-router-dom";
 import qs from "query-string";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
 import CoreForm from "../ModalFrom/CoreForm";
+import { useHistory } from "react-router-dom";
 import CategoryTable from "components/Tables/CategoryTable";
 import { useGetAllCategories, useCreateCategory, useUpdateCategory } from "../../Requests/CategoryRequest";
 import { categoryCreateInput } from "../../utils/FormInputs/CategoryFormInputs";
-const CategoriesList = (props) => {
-  const {
-    match: { params },
-    history,
-  } = props;
+const CategoriesList = () => {
+  const history = useHistory();
   const { isLoading: categoriesIsLoading, data: categoriesData, status: categoriesStatus } = useGetAllCategories();
   const { mutate: createCategory } = useCreateCategory();
   const { mutate: updateCategory } = useUpdateCategory("list");
-
+  const [queryParams, setQueryParams] = useState(qs.parse(history.location.search));
   const [formInputs, setFormInputs] = useState(null);
   useEffect(() => {
     if (!categoriesIsLoading) {
@@ -33,11 +30,9 @@ const CategoriesList = (props) => {
     subscription: true,
   };
 
-  const [queryParams, setQueryParams] = useState(qs.parse(params.param));
-
   useEffect(() => {
     const queryString = qs.stringify(queryParams);
-    history.replace(`/categories/${queryString}`);
+    history.replace(`/categories?${queryString}`);
   }, [queryParams, history]);
 
   const onSendForm = (values) => {
@@ -127,4 +122,4 @@ const CategoriesList = (props) => {
   );
 };
 
-export default withRouter(CategoriesList);
+export default CategoriesList;

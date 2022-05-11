@@ -62,11 +62,13 @@ export const useUpdateCoreProduct = () => {
   const queryClient = useQueryClient();
   return useMutation(
     ({ id, values }) => {
+      console.log(id, values);
       return axios.put(`${path}/coreProducts/${id}`, values);
     },
     {
       onSuccess: () => {
         queryClient.invalidateQueries(list.getAllCoreProducts);
+        queryClient.invalidateQueries(list.getSingleCoreProduct);
       },
     }
   );

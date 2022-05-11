@@ -1,7 +1,7 @@
-import React, { useEffect, useLayoutEffect } from "react";
+import React, { useEffect } from "react";
 import { connect } from "react-redux";
 import { Collapse } from "antd";
-import Location from "./Location"
+import Location from "./Location";
 
 import { getSubscriptions, updateSubscription, createSubscription, deleteSubscription } from "store/subscriptions/action";
 import { getRetailers } from "../../store/retailers/action";
@@ -18,7 +18,7 @@ const SubscriptionsList = (props) => {
   const { Panel } = Collapse;
 
   const {
-    getCategories,
+    // getCategories,
     deleteSubscription,
     getSubscriptions,
     updateSubscription,
@@ -81,7 +81,7 @@ const SubscriptionsList = (props) => {
   useEffect(() => {
     getSubscriptions({ subscription: false });
     getRetailers();
-  }, []);
+  }, [getSubscriptions, getRetailers]);
 
   console.log("searchTerms", searchTerms);
 
@@ -95,20 +95,22 @@ const SubscriptionsList = (props) => {
             <div className="title-taxonomy-main">Locations</div>
             <Collapse>
               {Object.keys(locations).map((locationItem) => {
-                return <Panel
-                key={locationItem}
-                showArrow={false}
-                header={
-                  <div className="taxonomy-title">
-                    <img src={getRetailerImg(locationItem)} alt="retailer" />
-                    <span>{locationItem}</span>
-                  </div>
-                }
-              >
-                {locations[locationItem].map((location) => (
-                  <Location key={location.id} location={location} updateSubscription={updateSubscription} />
-                ))}
-              </Panel>
+                return (
+                  <Panel
+                    key={locationItem}
+                    showArrow={false}
+                    header={
+                      <div className="taxonomy-title">
+                        <img src={getRetailerImg(locationItem)} alt="retailer" />
+                        <span>{locationItem}</span>
+                      </div>
+                    }
+                  >
+                    {locations[locationItem].map((location) => (
+                      <Location key={location.id} location={location} updateSubscription={updateSubscription} />
+                    ))}
+                  </Panel>
+                );
               })}
             </Collapse>
           </div>

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { withRouter } from "react-router-dom";
 import moment from "moment";
 import { Popconfirm, Button } from "antd";
 import { Link } from "react-router-dom";
@@ -20,9 +19,12 @@ import {
 } from "../../Requests/ManufacturerRequest";
 import { useDeleteBrand, useGetAllBrands } from "../../Requests/BrandRequest";
 import Loader from "components/Loader/Loader";
+import { useParams, useHistory } from "react-router-dom";
 
-const ManufacturersDesc = ({ history, match: { params } }) => {
-  const { isLoading: manufacturerIsLoading, data: manufacturerData } = useGetSingleManufacturer(params.id);
+const ManufacturersDesc = () => {
+  const { id: paramId } = useParams();
+  const history = useHistory();
+  const { isLoading: manufacturerIsLoading, data: manufacturerData } = useGetSingleManufacturer(paramId);
   const { mutate: deleteBrand } = useDeleteBrand("manufacturerDes");
   const { mutate: deleteManufacturer } = useDeleteManufacturer(history);
   const { mutate: updateManufacturer } = useUpdateManufacturer("single");
@@ -46,23 +48,23 @@ const ManufacturersDesc = ({ history, match: { params } }) => {
   };
 
   const handleDelete = () => {
-    deleteManufacturer(params.id);
+    deleteManufacturer(paramId);
   };
 
   const onFinishCreate = (values) => {
-    const data = { ...values, ...{ manufacturerId: Number(params.id) } };
+    const data = { ...values, ...{ manufacturerId: Number(paramId) } };
     console.log("Form Data", data);
     createBrandManufacturers(data);
   };
 
   const onSendForm = (values) => {
     const { name, color } = values;
-    updateManufacturer({ manufacturer: { manufacturer: { name, color } }, id: params.id });
+    updateManufacturer({ manufacturer: { manufacturer: { name, color } }, id: paramId });
   };
 
   const onFinishAddBrands = (values) => {
     const { brands } = values;
-    updateManufacturer({ manufacturer: { manufacturer: { brands } }, id: params.id });
+    updateManufacturer({ manufacturer: { manufacturer: { brands } }, id: paramId });
   };
 
   return (
@@ -166,4 +168,4 @@ const ManufacturersDesc = ({ history, match: { params } }) => {
   );
 };
 
-export default withRouter(ManufacturersDesc);
+export default ManufacturersDesc;

@@ -90,10 +90,10 @@ const ManufacturersTable = ({ data, page, perPage, setPage, setPerPage, handleEd
       dataIndex: "brand",
       width: "60%",
       key: "brand",
-      render: (text, record) =>
+      render: (text) =>
         text.map((i, index) => (
           <Link key={index} to={`/brand/${i.id}/brand/page=0&perPage=10`}>
-            {index !== 0 ? i.name + " / " : i.name}
+            {i.name + " / "}
           </Link>
         )),
     },

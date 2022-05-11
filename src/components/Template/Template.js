@@ -46,44 +46,44 @@ const Template = (props) => {
           </div>
           <Menu theme="dark" selectedKeys={[activeLink]} mode="inline">
             <Menu.Item key="users">
-              <Link to={"/users/company&page=0&perPage=10"}>
+              <Link to={"/users?page=0&perPage=10"}>
                 <UserSwitchOutlined />
                 <span className="color-selected">Users</span>
               </Link>
             </Menu.Item>
             <Menu.Item key="manufacturers">
-              <Link to={"/manufacturers/page=0&perPage=10"}>
+              <Link to={"/manufacturers?page=0&perPage=10"}>
                 <PieChartOutlined />
                 <span className="color-selected">Manufacturers</span>
               </Link>
             </Menu.Item>
             <Menu.Item key="brands">
-              <Link to={"/brands/page=0&perPage=10"}>
+              <Link to={"/brands?page=0&perPage=10"}>
                 <DesktopOutlined />
                 <span className="color-selected">Brands</span>
               </Link>
             </Menu.Item>
             <Menu.Item key="retailers">
-              <Link to={"/retailers/page=0&perPage=10"}>
+              <Link to={"/retailers?page=0&perPage=10"}>
                 <ControlOutlined />
                 <span className="color-selected">Retailers</span>
               </Link>
             </Menu.Item>
             <Menu.Item key="categories">
-              <Link to={"/categories/page=0&perPage=10"}>
+              <Link to={"/categories?page=0&perPage=10"}>
                 <GroupOutlined />
                 <span className="color-selected">Categories</span>
               </Link>
             </Menu.Item>
             <Menu.Item key="product-groups">
-              <Link to={"/product-groups/page=0&perPage=10"}>
+              <Link to={"/product-groups?page=0&perPage=10"}>
                 <FileProtectOutlined />
 
                 <span className="color-selected">Custom Groups</span>
               </Link>
             </Menu.Item>
             <Menu.Item key="companies">
-              <Link to={"/companies/page=0&perPage=10"}>
+              <Link to={"/companies?page=0&perPage=10"}>
                 <ContainerOutlined />
                 <span className="color-selected">Companies</span>
               </Link>
@@ -91,7 +91,7 @@ const Template = (props) => {
             <Menu.Item key="core-products">
               <Link
                 to={
-                  "/core-products/direction=ASC&noBrand=false&notReviewed=false&noCategory=false&issues=false&order=title&page=1&perPage=10&productId=null"
+                  "/core-products?direction=ASC&noBrand=false&notReviewed=false&noCategory=false&issues=false&order=title&page=1&perPage=10&productId=null"
                 }
               >
                 <CodeSandboxOutlined />

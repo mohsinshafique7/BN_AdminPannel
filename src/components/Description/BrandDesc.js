@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { withRouter } from "react-router-dom";
 import Loader from "../../components/Loader/Loader";
 import qs from "query-string";
 import moment from "moment";
@@ -10,6 +9,7 @@ import BrandsTable from "components/Tables/BrandsTable";
 import { brandsEditInputs } from "../../utils/FormInputs/BrandFormInputs";
 import { useGetSingleBrand, useGetAllBrands, useUpdateBrand, useDeleteBrand } from "../../Requests/BrandRequest";
 import { useGetAllManufacturers } from "../../Requests/ManufacturerRequest";
+import { useParams, useHistory } from "react-router-dom";
 
 const Styles = styled.div`
   .check-item {
@@ -33,7 +33,10 @@ const Styles = styled.div`
   }
 `;
 
-const BrandDesc = ({ history, match: { params } }) => {
+const BrandDesc = () => {
+  const params = useParams();
+  const history = useHistory();
+
   const { TabPane } = Tabs;
   const { isLoading: brandIsLoading, data: brandData } = useGetSingleBrand(params.id);
   const { mutate: updateBrand } = useUpdateBrand("single");
@@ -187,4 +190,4 @@ const BrandDesc = ({ history, match: { params } }) => {
   );
 };
 
-export default withRouter(BrandDesc);
+export default BrandDesc;

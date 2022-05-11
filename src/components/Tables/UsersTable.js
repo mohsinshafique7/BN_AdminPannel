@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Pagination } from "antd";
+import { Table, Pagination, Avatar } from "antd";
 import { Link } from "react-router-dom";
 import { FilterFilled } from "@ant-design/icons";
 import _ from "lodash";
@@ -8,6 +8,7 @@ import styled from "styled-components";
 import CoreForm from "components/ModalFrom/CoreForm";
 import { usersEditInputs } from "../../utils/FormInputs/UsersFormInputs";
 import { renderTableData, getFilter } from "../../utils/helpers";
+import { UserOutlined } from "@ant-design/icons";
 
 import { useGetAllCompanies } from "../../Requests/CompanyRequest";
 export const Styles = styled.div`
@@ -40,6 +41,7 @@ const UsersTable = ({ data, page, perPage, setPage, setPerPage, handleEditUser }
       last_name: item.last_name,
       companyId: item.companyId,
       is_stuff: item.is_stuff,
+      avatar: item.avatar,
     };
   });
   const renderData = renderTableData(page, perPage, dataSource);
@@ -80,6 +82,13 @@ const UsersTable = ({ data, page, perPage, setPage, setPerPage, handleEditUser }
             onSendForm={handleEditUser}
           />
         ) : null,
+    },
+    {
+      title: "Avatar",
+      dataIndex: "avatar",
+      key: "avatar",
+      width: "5%",
+      render: (text) => <Avatar size={40} src={text} alt={<UserOutlined />} />,
     },
     {
       title: "Name",
@@ -126,7 +135,7 @@ const UsersTable = ({ data, page, perPage, setPage, setPerPage, handleEditUser }
       title: "Status",
       dataIndex: "status",
       key: "status",
-      width: "15%",
+      width: "10%",
       sorter: (a, b) => a.status.length - b.status.length,
       filterIcon: (filtered) => <FilterFilled style={{ color: filtered ? "#1890ff" : undefined }} />,
       filters: [

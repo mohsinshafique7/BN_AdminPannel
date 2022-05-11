@@ -68,29 +68,29 @@ const Routers = () => {
       >
         <Switch>
           <SignInRoute exact path="/" component={SignIn} />
-          <PrivateRoute exact path="/users/:param" component={Users} />
+          <PrivateRoute exact path="/users" component={Users} />
           <PrivateRoute exact path="/user/:id" component={User} />
-          <PrivateRoute exact path="/manufacturers/:param" component={Manufacturers} />
+          <PrivateRoute exact path="/manufacturers" component={Manufacturers} />
           <PrivateRoute exact path="/manufacturer/:id/:param" component={Manufacturer} />
-          <PrivateRoute exact path="/brands/:param" component={Brands} />
+          <PrivateRoute exact path="/brands" component={Brands} />
           <PrivateRoute exact path="/brand/:id/:tab/:param" component={Brand} />
-          <PrivateRoute exact path="/retailers/:param" component={Retailers} />
+          <PrivateRoute exact path="/retailers" component={Retailers} />
           <PrivateRoute exact path="/retailer/:id" component={Retailer} />
-          <PrivateRoute exact path="/categories/:param" component={Categories} />
+          <PrivateRoute exact path="/categories" component={Categories} />
           <PrivateRoute exact path="/category/:id/:param" component={Category} />
-          <PrivateRoute exact path="/product-groups/:param" component={ProductGroups} />
+          <PrivateRoute exact path="/product-groups" component={ProductGroups} />
           <PrivateRoute exact path="/product-group/:id" component={ProductGroup} />
           <PrivateRoute exact path="/create-product-group/:id" component={CreateProductGroup} />
           <PrivateRoute exact path="/merge-product/:page" component={MergeProduct} />
           <PrivateRoute exact path="/scrapper-links/:param" component={ScrapperLinks} />
           <PrivateRoute exact path="/scrapper-link/:id" component={ScrapperLink} />
-          <PrivateRoute exact path="/companies/:param" component={Companies} />
+          <PrivateRoute exact path="/companies" component={Companies} />
           <PrivateRoute exact path="/company/:id/:tab/:param" component={Company} />
           <PrivateRoute exact path="/source-categories/:param" component={SourceCategories} />
           <PrivateRoute exact path="/source-category/:id" component={SourceCategory} />
           <PrivateRoute exact path="/mapping-suggestions/:tab/:page" component={Suggestions} />
           <PrivateRoute exact path="/mapping-suggestion/:id" component={Suggestion} />
-          <PrivateRoute exact path="/core-products/:page" component={CoreProducts} />
+          <PrivateRoute exact path="/core-products" component={CoreProducts} />
           <PrivateRoute exact path="/core-product/:id" component={CoreProduct} />
           <PrivateRoute exact path="/errors/:param" component={Errors} />
           <PrivateRoute exact path="/error/:id" component={Error} />
@@ -101,6 +101,7 @@ const Routers = () => {
           <PrivateRoute exact path="/product-error/:id" component={ProductError} />
           <PrivateRoute exact path="/scraper-settings/:param" component={ScraperSettings} />
           <PrivateRoute exact path="/scraper-setting/:param" component={ScraperSetting} />
+
           <Route component={NotFoundPage} />
         </Switch>
         {!!error ? (
