@@ -8,7 +8,7 @@ import BrandsTable from "components/Tables/BrandsTable";
 import { useGetAllManufacturers } from "../../Requests/ManufacturerRequest";
 import { useGetAllBrands, useCreateBrand, useUpdateBrand } from "../../Requests/BrandRequest";
 import { brandsCreateInputs } from "../../utils/FormInputs/BrandFormInputs";
-import { useParams, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 const BrandsList = () => {
   const history = useHistory();
   const { mutate: createBrand } = useCreateBrand();
@@ -40,10 +40,11 @@ const BrandsList = () => {
   };
 
   const searchedData = useMemo(() => {
-    const search = new RegExp(searchValue, "gi");
-    return brandsData?.brands.filter(
-      (item) => item.name.match(search) || item?.parent?.name.match(search) || item?.manufacture?.name.match(search)
-    );
+    // const search = new RegExp(searchValue, "gi");
+    return brandsData?.brands.filter((o) => Object.keys(o).some((k) => String(o[k]).toLowerCase().includes(searchValue.toLowerCase())));
+    // return brandsData?.brands.filter(
+    //   (item) => item.name.match(search) || item?.parent?.name.match(search) || item?.manufacture?.name.match(search)
+    // );
   }, [searchValue, brandsData]);
   const setPage = (page) => {
     setQueryParams((queryParams) => {
@@ -75,6 +76,8 @@ const BrandsList = () => {
         <>
           <CoreForm title={"Create Brand"} inputData={formInputs.inputData} selectData={formInputs.selectData} onSendForm={onSendForm} />
           <BrandsTable
+            manufacturerData={manufacturerData}
+            brandsData={brandsData}
             data={searchedData}
             page={Number(queryParams.page)}
             perPage={Number(queryParams.perPage)}

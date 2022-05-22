@@ -11,7 +11,10 @@ import { manufacturerEditInputs } from "../../utils/FormInputs/ManufacturerFormI
 
 export const Styles = styled.div`
   margin-top: 15px;
-
+  .ant-table-cell {
+    padding: 10px;
+    vertical-align: middle;
+  }
   .pagination-controls {
     display: flex;
     justify-content: center;
@@ -43,25 +46,27 @@ const ManufacturersTable = ({ data, page, perPage, setPage, setPerPage, handleEd
   const onChangeSize = (page, pageSize) => {
     setPerPage(pageSize);
   };
-
+  const ReturnTable = ({ record }) => {
+    return (
+      <CoreForm
+        title={"Edit"}
+        initialValue={{
+          name: record.name,
+          color: record.color,
+          id: record.key,
+        }}
+        inputData={formInputs.inputData}
+        onSendForm={handleEditManufacturer}
+      />
+    );
+  };
   const columns = [
     {
       title: "Edit",
       dataIndex: "editUser",
       key: "editUser",
       width: "5%",
-      render: (_, record) => (
-        <CoreForm
-          title={"Edit"}
-          initialValue={{
-            name: record.name,
-            color: record.color,
-            id: record.key,
-          }}
-          inputData={formInputs.inputData}
-          onSendForm={handleEditManufacturer}
-        />
-      ),
+      render: (_, record) => <ReturnTable record={record} />,
     },
     {
       title: "Name",

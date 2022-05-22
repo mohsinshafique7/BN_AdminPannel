@@ -16,7 +16,6 @@ export const Styles = styled.div`
 
 const Header = (props) => {
   const state = useSelector((state) => state?.auth?.user);
-  console.log("Satte", state);
   const { Header } = Layout;
 
   return (

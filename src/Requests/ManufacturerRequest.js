@@ -72,7 +72,7 @@ export const useCreateBrandManufacturer = () => {
     }
   );
 };
-export const useUpdateManufacturer = (type) => {
+export const useUpdateManufacturer = () => {
   const queryClient = useQueryClient();
   return useMutation(
     ({ id, manufacturer }) => {
@@ -80,11 +80,9 @@ export const useUpdateManufacturer = (type) => {
     },
     {
       onSuccess: () => {
-        if (type === "single") {
-          queryClient.invalidateQueries(list.getSingleManufacturers);
-        } else if (type === "list") {
-          queryClient.invalidateQueries(list.getAllManufacturers);
-        }
+        queryClient.invalidateQueries(list.getSingleManufacturers);
+
+        queryClient.invalidateQueries(list.getAllManufacturers);
       },
       onError: () => {
         openNotification("error", "Error", "Error Updating Manufacturer");
@@ -99,7 +97,7 @@ export const useDeleteManufacturer = (history) => {
     },
     {
       onSuccess: () => {
-        history.push("/manufacturers/page=0&perPage=10");
+        history.push("/manufacturers?page=0&perPage=10");
       },
       onError: () => {
         openNotification("error", "Error", "Error Deleting Manufacturer");

@@ -12,7 +12,10 @@ import CoreForm from "components/ModalFrom/CoreForm";
 
 export const Styles = styled.div`
   margin-top: 15px;
-
+  .ant-table-cell {
+    padding: 10px;
+    vertical-align: middle;
+  }
   .pagination-controls {
     display: flex;
     justify-content: center;
@@ -37,26 +40,28 @@ const CompaniesTable = ({ data, page, perPage, setPage, setPerPage, handleEditCo
   const onChangeSize = (page, pageSize) => {
     setPerPage(pageSize);
   };
-
+  const ReturnTable = ({ record }) => {
+    return (
+      <CoreForm
+        title={"Edit"}
+        initialValue={{
+          name: record.name,
+          filtersStartDate: record.filtersStartDate ? moment(record.filtersStartDate) : moment(),
+          id: record.key,
+        }}
+        inputData={formInputs.inputData}
+        selectDate={formInputs.selectDate}
+        onSendForm={handleEditCompany}
+      />
+    );
+  };
   const columns = [
     {
       title: "Edit",
       dataIndex: "edit",
       key: "edit",
       width: "5%",
-      render: (_, record) => (
-        <CoreForm
-          title={"Edit"}
-          initialValue={{
-            name: record.name,
-            filtersStartDate: record.filtersStartDate ? moment(record.filtersStartDate) : moment(),
-            id: record.key,
-          }}
-          inputData={formInputs.inputData}
-          selectDate={formInputs.selectDate}
-          onSendForm={handleEditCompany}
-        />
-      ),
+      render: (_, record) => <ReturnTable record={record} />,
     },
     {
       title: "Name",

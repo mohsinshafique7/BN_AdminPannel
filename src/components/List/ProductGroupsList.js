@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import qs from "query-string";
 import Loader from "../Loader/Loader";
 import Search from "../Search/Search";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 import ProductGroupTable from "components/Tables/ProductGroupTable";
 import { useGetAllCustomGroups, useUpdateCustomGroup } from "../../Requests/CustomGroupRequest";
 const ProductGroupsList = () => {
@@ -43,14 +43,8 @@ const ProductGroupsList = () => {
   };
 
   const searchedData = useMemo(() => {
-    const search = new RegExp(searchValue, "gi");
-
-    return customGroupsData?.productGroups.filter(
-      (item) =>
-        item.name.match(search) ||
-        item?.user?.first_name.match(search) ||
-        item?.user?.last_name.match(search) ||
-        item?.company?.name.match(search)
+    return customGroupsData?.productGroups.filter((o) =>
+      Object.keys(o).some((k) => String(o[k]).toLowerCase().includes(searchValue.toLowerCase()))
     );
   }, [searchValue, customGroupsData]);
   function handleProductGroupEdit(values) {
@@ -62,9 +56,10 @@ const ProductGroupsList = () => {
     <>
       <div className="item-title">Product Groups</div>
       <Search />
-      <Button type="primary" href={"/create-product-group/0"}>
-        Create Product
-      </Button>
+      <Link to="/create-product-group/0">
+        <Button type="primary">Create Product</Button>
+      </Link>
+
       {customGroupListStatus === "success" && !customGroupsIsLoading ? (
         <ProductGroupTable
           data={searchedData}

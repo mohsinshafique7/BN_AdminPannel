@@ -9,7 +9,10 @@ import moment from "moment";
 import styled from "styled-components";
 export const Styles = styled.div`
   margin-top: 15px;
-
+  .ant-table-cell {
+    padding: 10px;
+    vertical-align: middle;
+  }
   .pagination-controls {
     display: flex;
     justify-content: center;

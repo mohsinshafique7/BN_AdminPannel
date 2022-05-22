@@ -61,8 +61,9 @@ const CategoriesList = () => {
   };
 
   const searchedData = useMemo(() => {
-    const search = new RegExp(searchValue, "gi");
-    return categoriesData?.categories.filter((item) => item.name.match(search));
+    return categoriesData?.categories.filter((o) =>
+      Object.keys(o).some((k) => String(o[k]).toLowerCase().includes(searchValue.toLowerCase()))
+    );
   }, [searchValue, categoriesData]);
 
   const changeSubscription = (item) => {
@@ -106,6 +107,7 @@ const CategoriesList = () => {
             switchData={formInputs.switchData}
           />
           <CategoryTable
+            categoriesData={categoriesData}
             data={searchedData}
             page={Number(queryParams.page)}
             perPage={Number(queryParams.perPage)}

@@ -89,7 +89,7 @@ export const useDeleteCategory = (history) => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries(list.getAllCategories);
-        history.push("/categories/page=0&perPage=10");
+        history.push("/categories?page=0&perPage=10");
       },
       onError: () => {
         openNotification("error", "Error", "Error Deleteint Category");

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Input, Pagination, Popover, Checkbox, Button, Empty, DatePicker, Switch } from "antd";
+import { Input, Pagination, Popover, Checkbox, Button, Empty, DatePicker, Switch, Row, Col } from "antd";
 import moment from "moment";
 import { HexColorPicker } from "react-colorful";
 import SelectBox from "../ModalFrom/Select";
@@ -328,13 +328,13 @@ const CreateProductGroup = (props) => {
   };
   useEffect(() => {
     if (customGroupCreateStatus === "success") {
-      history.push("/product-groups/page=0&perPage=10");
+      history.push("/product-groups?page=0&perPage=10");
     }
   }, [customGroupCreateStatus, history]);
 
   useEffect(() => {
     if (addCoreProductsStatus === "success") {
-      history.push("/product-groups/page=0&perPage=10");
+      history.push("/product-groups?page=0&perPage=10");
     }
   }, [addCoreProductsStatus, history]);
   const handleSubmit = () => {
@@ -357,9 +357,9 @@ const CreateProductGroup = (props) => {
 
   const handleBack = () => {
     if (isCreateProduct) {
-      props.history.push("/product-groups/page=0&perPage=10");
+      history.push("/product-groups?page=0&perPage=10");
     } else {
-      props.history.push(`/product-group/${params.id}`);
+      history.push(`/product-group/${params.id}`);
     }
   };
 
@@ -373,80 +373,106 @@ const CreateProductGroup = (props) => {
       <div className="wrapper-filter-categoty">
         {isCreateProduct && !companiesIsLoading && !usersIsLoading && selects ? (
           <>
-            <div className="wrapper-form-item">
-              <div className="lable-item">Name</div>
-              <Input value={queryParams.name} name={"name"} type={"text"} placeholder={"Enter name"} onChange={handleSetName} />
-            </div>
-
-            <div className="color-picker-wrapper">
-              <div className="wrapper-form-item">
-                <div className="lable-item">Color</div>
-                <Input value={queryParams.color} name={"color"} type={"text"} placeholder={"Enter color"} onChange={handleColorInput} />
-              </div>
-              <Popover
-                content={<HexColorPicker color={queryParams.color} onChange={handleColorPicker} />}
-                trigger="click"
-                visible={visibleColors}
-                onVisibleChange={() => setVisibleColors(!visibleColors)}
-              >
-                <Button type="primary">Colors</Button>
-              </Popover>
-            </div>
-
-            {!companiesIsLoading &&
-              !usersIsLoading &&
-              selects &&
-              selects.map((item, index) => (
-                <div key={index} className="select-filter-categoty">
-                  <SelectBox
-                    initialValue={item.initialValue}
-                    selectData={handleSetSelect}
-                    placeholder={item.placeholder}
-                    actionParam={item.param}
-                    value={item.value}
-                    option={item.option}
-                    initialId={item.initial}
-                    lable={item.lable}
-                    store={item.store}
-                    clearSelect={clearSelect}
+            <Row>
+              <Col span={12} style={{ paddingRight: "8px" }}>
+                <div className="wrapper-form-item">
+                  <div className="lable-item">Name</div>
+                  <Input
+                    value={queryParams.name}
+                    data-testid="name"
+                    name={"name"}
+                    type={"text"}
+                    placeholder={"Enter name"}
+                    onChange={handleSetName}
                   />
-                  <ClearOutlined onClick={() => handleClearSelect(item.param)} />
                 </div>
-              ))}
+              </Col>
+              <Col span={12}>
+                <div className="color-picker-wrapper">
+                  <div className="wrapper-form-item">
+                    <div className="lable-item">Color</div>
+                    <Input
+                      value={queryParams.color}
+                      name={"color"}
+                      data-testid="color"
+                      type={"text"}
+                      placeholder={"Enter color"}
+                      onChange={handleColorInput}
+                    />
+                  </div>
+                  <Popover
+                    content={<HexColorPicker color={queryParams.color} onChange={handleColorPicker} />}
+                    trigger="click"
+                    visible={visibleColors}
+                    onVisibleChange={() => setVisibleColors(!visibleColors)}
+                  >
+                    <Button type="primary">Colors</Button>
+                  </Popover>
+                </div>
+              </Col>
+            </Row>
+            <Row>
+              {!companiesIsLoading &&
+                !usersIsLoading &&
+                selects &&
+                selects.map((item, index) => (
+                  <Col key={index} flex="auto" style={{ paddingRight: "8px" }}>
+                    <div className="select-filter-categoty">
+                      <SelectBox
+                        initialValue={item.initialValue}
+                        selectData={handleSetSelect}
+                        placeholder={item.placeholder}
+                        actionParam={item.param}
+                        value={item.value}
+                        option={item.option}
+                        initialId={item.initial}
+                        lable={item.lable}
+                        store={item.store}
+                        clearSelect={clearSelect}
+                      />
+                      <ClearOutlined onClick={() => handleClearSelect(item.param)} />
+                    </div>
+                  </Col>
+                ))}
+            </Row>
           </>
         ) : null}
 
         <div className="title">Core Products</div>
-        <div className="wrapper-form-item">
-          <div className="lable-item">Title</div>
-          <Input value={coreParams.title} name={"title"} type={"text"} placeholder={"Enter title"} onChange={handleSeInput} />
-        </div>
-        <div className="wrapper-form-item">
-          <div className="lable-item">EAN</div>
-          <Input value={coreParams.ean} name={"ean"} type={"text"} placeholder={"Enter EAN"} onChange={handleSeInput} />
-        </div>
+        <Row>
+          <Col span={12} style={{ paddingRight: "8px" }}>
+            <div className="wrapper-form-item">
+              <div className="lable-item">Title</div>
+              <Input value={coreParams.title} name={"title"} type={"text"} placeholder={"Enter title"} onChange={handleSeInput} />
+            </div>
+          </Col>
+          <Col span={12} style={{ paddingRight: "8px" }}>
+            <div className="wrapper-form-item">
+              <div className="lable-item">EAN</div>
+              <Input value={coreParams.ean} name={"ean"} type={"text"} placeholder={"Enter EAN"} onChange={handleSeInput} />
+            </div>
+          </Col>
+        </Row>
 
-        {!brandsIsLoading &&
-        !categoriesIsLoading &&
-        !manufacturerIsLoading &&
-        !customGroupsIsLoading &&
-        !coreProductsIsLoading &&
-        selectData ? (
+        {!brandsIsLoading && !categoriesIsLoading && !manufacturerIsLoading && !customGroupsIsLoading && selectData ? (
           <>
-            {selectData.map((item, index) => (
-              <Multiselect
-                key={index}
-                action={item.action}
-                store={item.store}
-                name={item.name}
-                lable={item.lable}
-                value={item.value}
-                option={item.option}
-                placeholder={item.placeholder}
-                initialValue={item.initialValue}
-                setSelectList={setSelectList}
-              />
-            ))}
+            <Row>
+              {selectData.map((item, index) => (
+                <Col key={index} flex="auto" style={{ paddingRight: "8px" }}>
+                  <Multiselect
+                    action={item.action}
+                    store={item.store}
+                    name={item.name}
+                    lable={item.lable}
+                    value={item.value}
+                    option={item.option}
+                    placeholder={item.placeholder}
+                    initialValue={item.initialValue}
+                    setSelectList={setSelectList}
+                  />
+                </Col>
+              ))}
+            </Row>
             <div className="filter-wrapper">
               <div className="filter-box">
                 <p>Date:</p>
@@ -477,55 +503,54 @@ const CreateProductGroup = (props) => {
                 <p>Goto Page:</p>
                 <Input value={coreParams.page} name="page" type="number" min="1" onChange={handlePage} />
               </div>
-            </div>
-
-            <div className="core-products-wrapper">
-              <div style={{ width: "50%" }}>
-                <div className="title-products">All core products</div>
-                <div className="all-products">
-                  <div className="products-list">
-                    {coreProductsData?.cores?.rows.length ? (
-                      coreProductsData?.cores?.rows.map((product, index) => (
-                        <div key={index} className="core-product-item">
-                          <Checkbox checked={queryParams.coreProducts.includes(product.id)} onChange={() => handleSelectProduct(product)}>
-                            {product.title}
-                          </Checkbox>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="wrapper-box">
-                        <Empty />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ width: "50%" }}>
-                <div className="title-products">Selected core products: {selectedProducts.length}</div>
-                <div className="selected-products">
-                  <div className="products-list">
-                    {selectedProducts.length ? (
-                      selectedProducts.map((product, index) => (
-                        <div key={index} className="core-product-item">
-                          <Checkbox checked={queryParams.coreProducts.includes(product.id)} onChange={() => handleSelectProduct(product)}>
-                            {product.title}
-                          </Checkbox>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="wrapper-box">
-                        <Empty />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+            </div>{" "}
           </>
         ) : (
           <Loader />
         )}
+        <div className="core-products-wrapper">
+          <div style={{ width: "50%" }}>
+            <div className="title-products">All core products</div>
+            <div className="all-products">
+              <div className="products-list">
+                {coreProductsData?.cores?.rows.length ? (
+                  coreProductsData?.cores?.rows.map((product, index) => (
+                    <div key={index} className="core-product-item">
+                      <Checkbox checked={queryParams.coreProducts.includes(product.id)} onChange={() => handleSelectProduct(product)}>
+                        {product.title}
+                      </Checkbox>
+                    </div>
+                  ))
+                ) : (
+                  <div className="wrapper-box">
+                    <Empty />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ width: "50%" }}>
+            <div className="title-products">Selected core products: {selectedProducts.length}</div>
+            <div className="selected-products">
+              <div className="products-list">
+                {selectedProducts.length ? (
+                  selectedProducts.map((product, index) => (
+                    <div key={index} className="core-product-item">
+                      <Checkbox checked={queryParams.coreProducts.includes(product.id)} onChange={() => handleSelectProduct(product)}>
+                        {product.title}
+                      </Checkbox>
+                    </div>
+                  ))
+                ) : (
+                  <div className="wrapper-box">
+                    <Empty />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
 
         {coreProductsData && (
           <>

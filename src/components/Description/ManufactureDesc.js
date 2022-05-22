@@ -27,7 +27,7 @@ const ManufacturersDesc = () => {
   const { isLoading: manufacturerIsLoading, data: manufacturerData } = useGetSingleManufacturer(paramId);
   const { mutate: deleteBrand } = useDeleteBrand("manufacturerDes");
   const { mutate: deleteManufacturer } = useDeleteManufacturer(history);
-  const { mutate: updateManufacturer } = useUpdateManufacturer("single");
+  const { mutate: updateManufacturer } = useUpdateManufacturer();
   const { mutate: createBrandManufacturers } = useCreateBrandManufacturer();
   const { isLoading: brandsIsLoading, data: brandsData, status: brandsStatus } = useGetAllBrands();
 

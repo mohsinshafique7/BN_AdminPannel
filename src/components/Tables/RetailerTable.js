@@ -11,7 +11,10 @@ import { retailerEditInput } from "../../utils/FormInputs/RetailerFormInputs";
 
 export const Styles = styled.div`
   margin-top: 15px;
-
+  .ant-table-cell {
+    padding: 10px;
+    vertical-align: middle;
+  }
   .pagination-controls {
     display: flex;
     justify-content: center;
@@ -37,24 +40,26 @@ const RetailerTable = ({ data, page, perPage, setPage, setPerPage, handleEditRet
   const onChangeSize = (page, pageSize) => {
     setPerPage(pageSize);
   };
-
+  const ReturnTable = ({ record }) => {
+    return (
+      <CoreForm
+        title={"Edit"}
+        initialValue={{
+          color: record.color,
+          id: record.key,
+        }}
+        inputData={formInputs}
+        onSendForm={handleEditRetailer}
+      />
+    );
+  };
   const columns = [
     {
       title: "Edit",
       dataIndex: "edit",
       key: "edit",
       width: "5%",
-      render: (_, record) => (
-        <CoreForm
-          title={"Edit"}
-          initialValue={{
-            color: record.color,
-            id: record.key,
-          }}
-          inputData={formInputs}
-          onSendForm={handleEditRetailer}
-        />
-      ),
+      render: (_, record) => <ReturnTable record={record} />,
     },
     {
       title: "Name",

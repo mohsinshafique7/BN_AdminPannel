@@ -62,12 +62,22 @@ export const useUpdateUsers = (type) => {
       return axios.put(`${path}/users/${id}`, values);
     },
     {
+      //   onMutate: async () => {
+      //   await queryClient.cancelQueries(list.getAllUsers);
+      //   const previousData = await queryClient.getQueryData(list.getAllUsers);
+      //   const newData = previousData?.users.filter((user) => user.id !== Number(id));
+      //   queryClient.setQueryData(list.getAllUsers, () => {
+      //     return {
+      //       users: newData,
+      //     };
+      //   });
+      //   return {
+      //     previousData,
+      //   };
+      // },
       onSuccess: () => {
-        if (type === "single") {
-          queryClient.invalidateQueries(list.getSingleUser);
-        } else if (type === "list") {
-          queryClient.invalidateQueries(list.getAllUsers);
-        }
+        queryClient.invalidateQueries(list.getSingleUser);
+        queryClient.invalidateQueries(list.getAllUsers);
       },
       onError: (error) => {
         openNotification("error", error.response.data.error, error.response.data.message);
@@ -100,7 +110,7 @@ export const useDeleteUsers = (history, id) => {
         openNotification("error", "Error", "Error Deleting User");
       },
       onSettled: () => {
-        history.push("/users/page=0&perPage=10");
+        history.push("/users?page=0&perPage=10");
         queryClient.invalidateQueries(list.getAllUsers);
       },
     }

@@ -9,19 +9,19 @@ import CoreForm from "components/ModalFrom/CoreForm";
 import { usersEditInputs } from "../../utils/FormInputs/UsersFormInputs";
 import { renderTableData, getFilter } from "../../utils/helpers";
 import { UserOutlined } from "@ant-design/icons";
-
-import { useGetAllCompanies } from "../../Requests/CompanyRequest";
 export const Styles = styled.div`
   margin-top: 15px;
-
+  .ant-table-cell {
+    padding: 10px;
+    vertical-align: middle;
+  }
   .pagination-controls {
     display: flex;
     justify-content: center;
     margin-top: 25px;
   }
 `;
-const UsersTable = ({ data, page, perPage, setPage, setPerPage, handleEditUser }) => {
-  const { isLoading: companiesIsLoading, data: companiesData } = useGetAllCompanies();
+const UsersTable = ({ data, page, perPage, setPage, setPerPage, handleEditUser, companiesIsLoading, companiesData }) => {
   const [formInputs, setFormInputs] = useState(null);
   useEffect(() => {
     if (!companiesIsLoading) {
@@ -56,32 +56,33 @@ const UsersTable = ({ data, page, perPage, setPage, setPerPage, handleEditUser }
   const onChangeSize = (page, pageSize) => {
     setPerPage(pageSize);
   };
-
+  const RetuenTable = ({ record }) => {
+    return (
+      <CoreForm
+        title={"Edit"}
+        initialValue={{
+          first_name: record.first_name,
+          last_name: record.last_name,
+          email: record.email,
+          companyId: record.companyId,
+          is_stuff: record.is_stuff,
+          status: record.status,
+          id: record.key,
+        }}
+        selectData={formInputs.selectData}
+        inputData={formInputs.inputData}
+        switchData={formInputs.switchData}
+        onSendForm={handleEditUser}
+      />
+    );
+  };
   const columns = [
     {
       title: "Edit",
       dataIndex: "editUser",
       key: "editUser",
       width: "5%",
-      render: (text, record) =>
-        formInputs ? (
-          <CoreForm
-            title={"Edit"}
-            initialValue={{
-              first_name: record.first_name,
-              last_name: record.last_name,
-              email: record.email,
-              companyId: record.companyId,
-              is_stuff: record.is_stuff,
-              status: record.status,
-              id: record.key,
-            }}
-            selectData={formInputs.selectData}
-            inputData={formInputs.inputData}
-            switchData={formInputs.switchData}
-            onSendForm={handleEditUser}
-          />
-        ) : null,
+      render: (text, record) => (formInputs ? <RetuenTable record={record} /> : null),
     },
     {
       title: "Avatar",
@@ -168,7 +169,7 @@ const UsersTable = ({ data, page, perPage, setPage, setPerPage, handleEditUser }
       dataIndex: "dateCreated",
       key: "dateCreated",
       width: "30%",
-      render: (text) => moment(text).format("YYYY-MM-DD hh:mm"),
+      render: (text) => moment(text).format("MMMM Do YYYY, h:mm"),
       filterIcon: (filtered) => <FilterFilled style={{ color: filtered ? "#1890ff" : undefined }} />,
     },
   ];

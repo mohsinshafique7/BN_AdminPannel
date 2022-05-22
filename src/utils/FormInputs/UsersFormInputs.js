@@ -57,7 +57,7 @@ export const usersCreateInputs = (companiesData) => {
       },
     ],
     passwordData: [{ label: "Password", name: "password", type: "password", required: true }],
-    switchData: [{ label: "Admin", name: "is_stuff", default: "active", required: false }],
+    switchData: [{ label: "Admin", name: "is_staff", default: "active", required: false }],
   };
 };
 export const usersSelectors = (initialValue, companiesData) => {

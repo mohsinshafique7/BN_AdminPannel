@@ -36,7 +36,6 @@ const UsersList = () => {
   }, [companiesIsLoading, companiesData, companiesStatus]);
 
   useEffect(() => {
-    console.log(queryParams);
     const queryString = qs.stringify(queryParams);
     history.replace(`/users?${queryString}`);
   }, [queryParams, history]);
@@ -72,13 +71,8 @@ const UsersList = () => {
   };
 
   const searchedData = useMemo(() => {
-    const search = new RegExp(searchValue, "gi");
-    return usersData?.users
-      .filter((item) => item.email.match(search) || item.first_name.match(search) || item.last_name.match(search))
-      .filter((item) => {
-        return queryParams?.company?.length > 0 ? item?.company?.name === queryParams.company : true;
-      });
-  }, [searchValue, usersData, queryParams]);
+    return usersData?.users.filter((o) => Object.keys(o).some((k) => String(o[k]).toLowerCase().includes(searchValue.toLowerCase())));
+  }, [searchValue, usersData]);
 
   const onSendForm = (values) => {
     createUser(values);
@@ -108,7 +102,7 @@ const UsersList = () => {
   };
   return (
     <>
-      <div data-testid="pageTitle" className="item-title">
+      <div data-testid="userListTitle" className="item-title">
         Users
       </div>
       <Search />
@@ -151,6 +145,8 @@ const UsersList = () => {
             setPage={setPage}
             setPerPage={setPerPage}
             handleEditUser={handleEditUser}
+            companiesIsLoading={companiesIsLoading}
+            companiesData={companiesData}
           />
         </>
       ) : (

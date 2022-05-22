@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { QueryList } from "./QueryList";
 import { showErrorPopup } from "../store/error-handler/actions";
 import { useDispatch } from "react-redux";
+import { openNotification } from "../utils/helpers";
 const path = process.env.REACT_APP_URL;
 
 const list = QueryList();
@@ -68,9 +69,18 @@ export const useUpdateRetailer = (type) => {
     }
   );
 };
-export const useDeleteRetailer = () => {
-  return useMutation((id) => {
-    console.log(id);
-    return axios.delete(`${path}/admin/retailers/${id}`);
-  });
+export const useDeleteRetailer = (history) => {
+  return useMutation(
+    (id) => {
+      return axios.delete(`${path}/admin/retailers/${id}`);
+    },
+    {
+      onSuccess: () => {
+        history.push("/retailers?page=0&perPage=10");
+      },
+      onError: () => {
+        openNotification("error", "Error", "Error Deleting Retailer");
+      },
+    }
+  );
 };

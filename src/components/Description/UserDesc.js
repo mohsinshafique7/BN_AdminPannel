@@ -18,7 +18,7 @@ const UserDesc = () => {
   const { mutate: deleteUser } = useDeleteUsers(history, paramId);
   const { mutate: resetUserPassword } = useResetUserPassword();
   const { isLoading: companiesIsLoading, data: companiesData } = useGetAllCompanies();
-  const { mutate: updateUser } = useUpdateUsers("single");
+  const { mutate: updateUser } = useUpdateUsers("list");
   const [formInputs, setFormInputs] = useState(null);
   useEffect(() => {
     if (!companiesIsLoading) {
@@ -107,7 +107,9 @@ const UserDesc = () => {
               <CoreForm title={"Reset Password"} passwordData={passwordData} onSendForm={handleResetPassword} />
             </div>
           </div>
-          <div>{/* <UsersHistoryTable id={paramId} /> */}</div>
+          <div>
+            <UsersHistoryTable id={paramId} />
+          </div>
         </>
       ) : (
         <Loader />

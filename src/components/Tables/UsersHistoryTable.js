@@ -7,7 +7,10 @@ import { useGetUserHistory } from "../../Requests/UsersRequest";
 
 export const Styles = styled.div`
   margin-top: 15px;
-
+  .ant-table-cell {
+    padding: 10px;
+    vertical-align: middle;
+  }
   .pagination-controls {
     display: flex;
     justify-content: center;
@@ -17,7 +20,6 @@ export const Styles = styled.div`
 const UsersHistoryTable = ({ id }) => {
   const [postParams, setPostParams] = useState({ page: 1, perPage: 10 });
   const { isLoading: userHistoryIsLoading, data: userHistoryData } = useGetUserHistory({ id, params: postParams });
-
   const dataSource = userHistoryData?.history?.rows.map((item) => {
     return {
       key: item.id,
@@ -54,7 +56,7 @@ const UsersHistoryTable = ({ id }) => {
       dataIndex: "createdAt",
       key: "createdAt",
       width: "10%",
-      render: (text) => moment(text).format("YYYY-MM-DD hh:mm"),
+      render: (text) => moment(text).format("MMMM Do YYYY, h:mm"),
     },
   ];
   return (

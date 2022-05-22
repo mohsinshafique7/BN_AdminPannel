@@ -5,6 +5,10 @@ import { DeleteOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 export const Styles = styled.div`
   margin-top: 15px;
+  .ant-table-cell {
+    padding: 10px;
+    vertical-align: middle;
+  }
 
   .pagination-controls {
     display: flex;

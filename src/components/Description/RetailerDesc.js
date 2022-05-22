@@ -12,7 +12,7 @@ const RetailerDesc = () => {
   const history = useHistory();
   const { isLoading: retailerIsLoading, data: retailerData } = useGetSingleRetailers(paramId);
   const { mutate: updateRetailer } = useUpdateRetailer("retailerDes");
-  const { mutate: deleteRetailer, status: retailerDeleteStatus } = useDeleteRetailer();
+  const { mutate: deleteRetailer } = useDeleteRetailer(history);
 
   const inputData = retailerEditInput();
 
@@ -20,11 +20,7 @@ const RetailerDesc = () => {
     id: paramId,
     color: retailerData?.retailer?.color,
   };
-  useEffect(() => {
-    if (retailerDeleteStatus === "success") {
-      history.push("/retailers/page=0&perPage=10");
-    }
-  }, [retailerDeleteStatus, history]);
+
   const handleDelete = () => {
     deleteRetailer(paramId);
   };

@@ -12,8 +12,10 @@ const Multiselect = (props) => {
     <div className="wrapper-form-item">
       <div className="lable-item">{props.placeholder}</div>
       <Select
+        dropdownMatchSelectWidth={false}
         mode="multiple"
         style={{ width: "100%" }}
+        listItemHeight={{}}
         placeholder={props.placeholder}
         onChange={handleChange}
         defaultValue={initialValue ? initialValue.split(",").map((item) => Number(item)) : undefined}

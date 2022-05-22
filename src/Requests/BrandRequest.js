@@ -92,7 +92,7 @@ export const useDeleteBrand = (type, history) => {
         } else {
           queryClient.invalidateQueries(list.getAllBrands);
         }
-        history.push("/brands/page=0&perPage=10");
+        history.push("/brands?page=0&perPage=10");
       },
       onError: () => {
         openNotification("error", "Error", "Error Deleting Brand");

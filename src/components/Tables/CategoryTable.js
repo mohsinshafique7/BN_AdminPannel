@@ -12,21 +12,31 @@ import { categoryEditInput } from "../../utils/FormInputs/CategoryFormInputs";
 
 export const Styles = styled.div`
   margin-top: 15px;
-
+  .ant-table-cell {
+    padding: 10px;
+    vertical-align: middle;
+  }
   .pagination-controls {
     display: flex;
     justify-content: center;
     margin-top: 25px;
   }
 `;
-const CategoryTable = ({ changeSubscription, data, page, perPage, setPage, setPerPage, handleCategoryEdit, showEdit = true }) => {
-  const { isLoading: categoriesIsLoading, data: categoriesData } = useGetAllCategories();
+const CategoryTable = ({
+  changeSubscription,
+  data,
+  page,
+  perPage,
+  setPage,
+  setPerPage,
+  handleCategoryEdit,
+  showEdit = true,
+  categoriesData,
+}) => {
   const [formInputs, setFormInputs] = useState(null);
   useEffect(() => {
-    if (!categoriesIsLoading) {
-      setFormInputs(categoryEditInput(categoriesData.categories));
-    }
-  }, [categoriesIsLoading, categoriesData]);
+    setFormInputs(categoryEditInput(categoriesData.categories));
+  }, [categoriesData]);
 
   const dataSource = data.map((item) => {
     return {
@@ -52,7 +62,27 @@ const CategoryTable = ({ changeSubscription, data, page, perPage, setPage, setPe
   const onChangeSize = (page, pageSize) => {
     setPerPage(pageSize);
   };
-
+  const ReturnTable = ({ record }) => {
+    return (
+      <CoreForm
+        title={"Edit"}
+        // categorySelect={true}
+        initialValue={{
+          id: record.key,
+          name: record.name,
+          color: record.color,
+          categoryId: record.categoryId,
+          subscription: record.subscription,
+          pricePer: record.pricePer,
+          measurementUnit: record.measurementUnit,
+        }}
+        inputData={formInputs.inputData}
+        selectData={formInputs.selectData}
+        switchData={formInputs.switchData}
+        onSendForm={handleCategoryEdit}
+      />
+    );
+  };
   const columns = [
     {
       title: "Edit",
@@ -60,26 +90,7 @@ const CategoryTable = ({ changeSubscription, data, page, perPage, setPage, setPe
       key: "edit",
       width: "5%",
       visible: false,
-      render: (_, record) =>
-        !categoriesIsLoading && formInputs ? (
-          <CoreForm
-            title={"Edit"}
-            // categorySelect={true}
-            initialValue={{
-              id: record.key,
-              name: record.name,
-              color: record.color,
-              categoryId: record.categoryId,
-              subscription: record.subscription,
-              pricePer: record.pricePer,
-              measurementUnit: record.measurementUnit,
-            }}
-            inputData={formInputs.inputData}
-            selectData={formInputs.selectData}
-            switchData={formInputs.switchData}
-            onSendForm={handleCategoryEdit}
-          />
-        ) : null,
+      render: (_, record) => (formInputs ? <ReturnTable record={record} /> : null),
     },
     {
       title: "Name",
@@ -132,7 +143,7 @@ const CategoryTable = ({ changeSubscription, data, page, perPage, setPage, setPe
       filterIcon: (filtered) => <FilterFilled style={{ color: filtered ? "#1890ff" : undefined }} />,
     },
     {
-      title: "Price per",
+      title: "Price Per",
       dataIndex: "pricePer",
       key: "pricePer",
       width: "10%",
@@ -184,7 +195,7 @@ const CategoryTable = ({ changeSubscription, data, page, perPage, setPage, setPe
       dataIndex: "dateCreated",
       key: "dateCreated",
       width: "30%",
-      render: (text) => moment(text).format("YYYY-MM-DD hh:mm"),
+      render: (text) => moment(text).format("MMMM Do YYYY, h:mm"),
       filterIcon: (filtered) => <FilterFilled style={{ color: filtered ? "#1890ff" : undefined }} />,
     },
   ].filter((item) => {

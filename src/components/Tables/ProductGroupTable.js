@@ -12,6 +12,10 @@ import { renderTableData, getFilter } from "../../utils/helpers";
 
 export const Styles = styled.div`
   margin-top: 15px;
+  .ant-table-cell {
+    padding: 10px;
+    vertical-align: middle;
+  }
 
   .pagination-controls {
     display: flex;
@@ -51,28 +55,29 @@ const ProductGroupTable = ({ data, page, perPage, setPage, setPerPage, handlePro
   const onChangeSize = (page, pageSize) => {
     setPerPage(pageSize);
   };
-
+  const ReturnTable = ({ record }) => {
+    return (
+      <CoreForm
+        title={"Edit"}
+        initialValue={{
+          name: record.name,
+          userId: record.userId,
+          companyId: record.companyId,
+          id: record.key,
+        }}
+        inputData={formInputs.inputData}
+        selectData={formInputs.selectData}
+        onSendForm={handleProductGroupEdit}
+      />
+    );
+  };
   const columns = [
     {
       title: "Edit",
       dataIndex: "editUser",
       key: "editUser",
       width: "5%",
-      render: (_, record) =>
-        formInputs && !companiesIsLoading && !usersIsLoading ? (
-          <CoreForm
-            title={"Edit"}
-            initialValue={{
-              name: record.name,
-              userId: record.userId,
-              companyId: record.companyId,
-              id: record.key,
-            }}
-            inputData={formInputs.inputData}
-            selectData={formInputs.selectData}
-            onSendForm={handleProductGroupEdit}
-          />
-        ) : null,
+      render: (_, record) => (formInputs && !companiesIsLoading && !usersIsLoading ? <ReturnTable record={record} /> : null),
     },
     {
       title: "Name",

@@ -37,8 +37,9 @@ const CompaniesList = () => {
   };
 
   const searchedData = useMemo(() => {
-    const search = new RegExp(searchValue, "gi");
-    return companiesData?.companies.filter((item) => item.name.match(search));
+    return companiesData?.companies.filter((o) =>
+      Object.keys(o).some((k) => String(o[k]).toLowerCase().includes(searchValue.toLowerCase()))
+    );
   }, [searchValue, companiesData]);
 
   const setPage = (page) => {

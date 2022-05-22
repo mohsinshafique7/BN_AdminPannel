@@ -1,9 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button, Modal, Form, Input, DatePicker } from "antd";
 import SelectBox from "./SelectBox";
 import UploadImg from "./UploadImg";
 import SwitchBox from "./SwitchBox";
-
 const CoreForm = (props) => {
   const { initialValue } = props;
   const [form] = Form.useForm();
@@ -38,11 +37,12 @@ const CoreForm = (props) => {
 
   return (
     <div>
-      <Button type="primary" onClick={() => setVisible(true)}>
+      {/* <GlobalOutlined onClick={() => setVisible(true)} style={{ fontSize: "1.5rem" }} /> */}
+      <Button type="primary" style={{ cursor: "pointer" }} onClick={() => setVisible(true)}>
         {props.title}
       </Button>
       <Modal
-        // forceRender={true}
+        //forceRender={true}
         className={`modal-form ${props.className}`}
         title={props.title}
         visible={visible}
@@ -74,6 +74,7 @@ const CoreForm = (props) => {
           {props.inputData && props.inputData.length
             ? props.inputData.map((item, index) => (
                 <Form.Item
+                  data-testid={item.name}
                   key={index}
                   style={item?.display === false ? { display: "none" } : {}}
                   label={item.label}
@@ -89,6 +90,7 @@ const CoreForm = (props) => {
             ? props.passwordData.map((item, index) => (
                 <Form.Item
                   key={index}
+                  data-testid={item.name}
                   label={item.label}
                   name={item.name}
                   rules={[
@@ -111,6 +113,7 @@ const CoreForm = (props) => {
                 <Form.Item
                   key={index}
                   label={item.label}
+                  data-testid={item.name}
                   name={item.name}
                   style={item?.display === false ? { display: "none" } : {}}
                   rules={[{ required: item.required, message: `Please input ${item.label}!` }]}
@@ -122,24 +125,25 @@ const CoreForm = (props) => {
 
           {props.selectData && props.selectData.length
             ? props.selectData.map((item, index) => (
-                <SelectBox
-                  key={index}
-                  categorySelect={item.categorySelect}
-                  brandSelect={item.brandSelect}
-                  store={item.store}
-                  name={item.name}
-                  lable={item.lable}
-                  value={item.value}
-                  option={item.option}
-                  mode={item.mode}
-                  required={item.required}
-                />
+                <div key={index} data-testid={item.name}>
+                  <SelectBox
+                    categorySelect={item.categorySelect}
+                    brandSelect={item.brandSelect}
+                    store={item.store}
+                    name={item.name}
+                    lable={item.lable}
+                    value={item.value}
+                    option={item.option}
+                    mode={item.mode}
+                    required={item.required}
+                  />
+                </div>
               ))
             : null}
           <div>
             {switchData && switchData.length
               ? switchData.map((item, index) => (
-                  <div key={index} style={item?.display === false ? { display: "none" } : {}}>
+                  <div data-testid={item.name} key={index} style={item?.display === false ? { display: "none" } : {}}>
                     {" "}
                     <SwitchBox item={item} />
                   </div>
@@ -149,17 +153,11 @@ const CoreForm = (props) => {
 
           {props.selectDate && props.selectDate.length
             ? props.selectDate.map((item, index) => (
-                <Form.Item key={index} label={item.label} name={item.name}>
+                <Form.Item data-testid={item.name} key={index} label={item.label} name={item.name}>
                   <DatePicker />
                 </Form.Item>
               ))
             : null}
-
-          {/* <Form.Item>
-            <Button type="primary" htmlType="submit">
-              Submit
-            </Button>
-          </Form.Item> */}
         </Form>
       </Modal>
     </div>

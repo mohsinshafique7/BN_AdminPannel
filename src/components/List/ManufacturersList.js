@@ -23,22 +23,22 @@ const ManufacturersList = () => {
       setFormInputs(manufacturerCreateInputs(brandsData?.brands));
     }
   }, [brandsIsLoading, brandsData]);
-  const { searchValue } = useSelector((state) => {
-    return {
-      searchValue: state.filters.searchValue,
-    };
-  });
 
   const onSendForm = (values) => {
     const { name, brands, color } = values;
     createManufacturer({ manufacturer: { name, color }, brands });
   };
 
+  const { searchValue } = useSelector((state) => {
+    return {
+      searchValue: state.filters.searchValue,
+    };
+  });
   const searchedData = useMemo(() => {
-    const search = new RegExp(searchValue, "gi");
-    return manufacturerData?.manufacturers.filter((item) => item.name.match(search));
+    return manufacturerData?.manufacturers.filter((o) =>
+      Object.keys(o).some((k) => String(o[k]).toLowerCase().includes(searchValue.toLowerCase()))
+    );
   }, [searchValue, manufacturerData]);
-
   const setPage = (page) => {
     setQueryParams((queryParams) => {
       return {

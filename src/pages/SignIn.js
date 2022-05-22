@@ -76,25 +76,32 @@ const SignIn = (props) => {
   return (
     <Styles>
       <div className="signin-box">
-        <img src={icon} alt="img" />
+        <img data-testid="signInLogo" src={icon} alt="img" />
         <Form name="basic" initialValues={{ remember: true }} onFinish={onFinish} onFinishFailed={onFinishFailed}>
           {isError && (
-            <>
-              <Alert message="Error" description="Wrong password or email" type="error" showIcon />
+            <div>
+              <Alert data-testid="signInError" message="Error" description="Wrong password or email" type="error" showIcon />
               <br />
-            </>
+            </div>
           )}
-          <div className="title">Sign In</div>
-          <Form.Item label="Email" name="email" rules={[{ required: true, message: "Please enter your email!" }]}>
+          <div data-testid="signInTitle" className="title">
+            Sign In
+          </div>
+          <Form.Item data-testid="emailInput" label="Email" name="email" rules={[{ required: true, message: "Please enter your email!" }]}>
             <Input />
           </Form.Item>
 
-          <Form.Item label="Password" name="password" rules={[{ required: true, message: "Please enter your password!" }]}>
+          <Form.Item
+            data-testid="passwordInput"
+            label="Password"
+            name="password"
+            rules={[{ required: true, message: "Please enter your password!" }]}
+          >
             <Input.Password />
           </Form.Item>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit">
+            <Button data-testid="signInButton" type="primary" htmlType="submit">
               Login
             </Button>
           </Form.Item>

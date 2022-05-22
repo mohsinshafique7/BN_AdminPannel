@@ -1,7 +1,6 @@
-import { useLocation } from "react-router-dom";
-
-const useQuery = () => {
-  return new URLSearchParams(useLocation().search);
+import React from "react";
+const UseQuery = ({ id }) => {
+  return <div>HelloWorlds {id * 4}</div>;
 };
 
-export default useQuery;
+export default UseQuery;

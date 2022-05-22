@@ -7,6 +7,10 @@ import moment from "moment";
 import styled from "styled-components";
 export const Styles = styled.div`
   margin-top: 15px;
+  .ant-table-cell {
+    padding: 10px;
+    vertical-align: middle;
+  }
 
   .pagination-controls {
     display: flex;
@@ -50,7 +54,7 @@ const ManufacturerBrandTable = ({ data }) => {
       dataIndex: "dateCreated",
       key: "dateCreated",
       width: "20%",
-      render: (text) => moment(text).format("YYYY-MM-DD hh:mm"),
+      render: (text) => moment(text).format("MMMM Do YYYY, h:mm"),
       filterIcon: (filtered) => <FilterFilled style={{ color: filtered ? "#1890ff" : undefined }} />,
     },
   ];

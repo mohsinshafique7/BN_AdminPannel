@@ -32,8 +32,12 @@ const RetailersList = () => {
   };
 
   const searchedData = useMemo(() => {
-    const search = new RegExp(searchValue, "gi");
-    return retailersData?.retailers.filter((item) => item.name.match(search));
+    // const search = new RegExp(searchValue, "gi");
+    return retailersData?.retailers.filter((o) =>
+      Object.keys(o).some((k) => String(o[k]).toLowerCase().includes(searchValue.toLowerCase()))
+    );
+
+    // return retailersData?.retailers.filter((item) => item.name.match(search));
   }, [searchValue, retailersData]);
 
   const setPage = (page) => {
